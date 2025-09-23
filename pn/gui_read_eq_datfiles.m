@@ -36,7 +36,7 @@ dataset_t=dataset';
 pn_struct.f=dataset_t(1,:);
 pn_struct.n=dataset_t(2,:);
 pn_struct.comment='data imported from instrumentation';
-pn_struct.name=fname;
+pn_struct.name=file_basename;
 pn_struct.clock=clock;
 save(strcat('datfiles_local/',strcat(file_basename,'_pndata.mat')),'pn_struct');
 %TODO gotta strip out the extension of the original file
