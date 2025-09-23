@@ -21,10 +21,12 @@ source_flag='e5052b';
 
 file_input=csvread(strcat(fpath,fname))
 
-if source_flag=='pxa'
+if (source_flag=='pxa')
 	dataset=file_input(54:end,1:2); %% first two columns from entry 54 on (empirical)
-elseif source_flag=='e5052b'
+elseif (source_flag=='e5052b')
 	dataset=file_input(2:end,1:2); %% only one column header here
+else
+	disp('source flag not valid');
 endif
    
 dataset_t=dataset';
