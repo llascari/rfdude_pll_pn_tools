@@ -14,8 +14,8 @@ clear;
 
 %%TODO hack until I can figure out a better plan
 %
-source_flag='pxa';
-%source_flag='e5052b';
+%source_flag='pxa';
+source_flag='e5052b';
 
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
@@ -26,4 +26,12 @@ if source_flag=='pxa'
 elseif source_flag=='e5052b'
 	dataset=file_input(2:end,1:2); %% only one column header here
 endif
+   
+dataset_t=dataset';
+pn_struct.f=dataset_t(1,:);
+pn_struct.n=dataset_t(2,:);
+pn_struct.comment='data imported from instrumentation';
+pn_struct.name=fname;
+pn_struct.clock=clock;
+save(strcat(fname,'_pndata.mat','pn_struct'));
 
