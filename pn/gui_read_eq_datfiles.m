@@ -22,6 +22,8 @@ source_flag=2; %E5052b
 
 file_input=csvread(strcat(fpath,fname))
 
+[file_basename rem ]=strtok(fname,'.'); %strip off extension
+
 if (source_flag==1)
 	dataset=file_input(54:end,1:2); %% first two columns from entry 54 on (empirical)
 elseif (source_flag==2)
@@ -36,5 +38,5 @@ pn_struct.n=dataset_t(2,:);
 pn_struct.comment='data imported from instrumentation';
 pn_struct.name=fname;
 pn_struct.clock=clock;
-save(strcat('datfiles_local/',strcat(fname,'_pndata.mat')),'pn_struct');
+save(strcat('datfiles_local/',strcat(file_basename,'_pndata.mat')),'pn_struct');
 %TODO gotta strip out the extension of the original file
