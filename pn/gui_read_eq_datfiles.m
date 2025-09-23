@@ -36,5 +36,5 @@ pn_struct.n=dataset_t(2,:);
 pn_struct.comment='data imported from instrumentation';
 pn_struct.name=fname;
 pn_struct.clock=clock;
-save(strcat('datfiles_local/',strcat(fname,'_pndata.mat','pn_struct')));
+save(strcat('datfiles_local/',strcat(fname,'_pndata.mat')),'pn_struct');
 
