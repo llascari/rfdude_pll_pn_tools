@@ -7,6 +7,8 @@
 %shows pretty good agreement with mathcad version using the same input data... bonus.
 
 %% ***the return value is residual FM in Hz 
+%Copyright 2025 Lance Lascari / RFdude.com LLC       %
+
 function [rfm_Hz]=calculate_residual_fm(f,p_dBc,ll,ul)
 warning('RFM calc seems broken or flaky, working to verify ');
 	rfm_Hz=0;

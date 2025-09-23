@@ -7,6 +7,8 @@
 
 %% ***the return value is actually itegrated phase error in radians
 %to get EVM/snr do a 20*log10 
+%Copyright 2025 Lance Lascari / RFdude.com LLC       %
+
 function [ntot]=integrate_ssb_pnoise(f,p_dBc,ll,ul)
 
 	integ_indices=find(f>=ll & f<=ul);
