@@ -13,6 +13,7 @@ clear;
 
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
+file_input=csvread(strcat(fpath,fname))
 
 
 
