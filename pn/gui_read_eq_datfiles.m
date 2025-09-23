@@ -15,7 +15,7 @@ clear;
 %%TODO hack until I can figure out a better plan
 %
 %source_flag='pxa';
-source_flag='e5052b';
+source_flag='52b';
 
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
@@ -23,7 +23,7 @@ file_input=csvread(strcat(fpath,fname))
 
 if (source_flag=='pxa')
 	dataset=file_input(54:end,1:2); %% first two columns from entry 54 on (empirical)
-elseif (source_flag=='e5052b')
+elseif (source_flag=='52b')
 	dataset=file_input(2:end,1:2); %% only one column header here
 else
 	disp('source flag not valid');
