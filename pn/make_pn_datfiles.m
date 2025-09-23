@@ -1,6 +1,6 @@
 % make_pn_datfiles.m
 % create a phase noise data file for analysis elsewhere.
-%
+%test
 %revised/sanitized 20250922 LL
 %Copyright 2025 Lance Lascari / RFdude.com LLC
 %
