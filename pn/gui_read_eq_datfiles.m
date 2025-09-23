@@ -11,6 +11,8 @@
 %save('datfiles_local/device_a.mat','pn_struct');
 clear;
 
+[fname,fpath,fltidx]=uigetfile("*.csv");
+
 
 
 
