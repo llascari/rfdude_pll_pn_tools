@@ -30,7 +30,7 @@ elseif (source_flag==2)        %E5052b
 	dataset=file_input(2:end,1:2); %% only one column header here
 else
 	disp('source flag not valid');
-endif
+end
    
 dataset_t=dataset';
 pn_struct.f=dataset_t(1,:);
