@@ -12,17 +12,26 @@
 clear;
 
 
-%%TODO hack until I can figure out a better plan
-%
-%source_flag='pxa';
-%source_flag=1;  %PXA
-source_flag=2; %E5052b
-
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
 file_input=csvread(strcat(fpath,fname))
 
 [file_basename rem ]=strtok(fname,'.'); %strip off extension
+
+%TODO -- come up with auto detect file type someday
+btn=questdlg('which instrument?','Instrument','pxa','e5052b','e5052b')
+btn
+
+%%TODO hack until I can figure out a better plan
+%
+%source_flag='pxa';
+%source_flag=1;  %PXA
+
+if (strcmp(btn,'pxa')       )
+	source_flag=1;
+elseif (strcmp(btn,'e5052b')
+source_flag=2; %E5052b
+end
 
 if (source_flag==1)        %PXA
 	dataset=file_input(54:end,1:2); %% first two columns from entry 54 on (empirical)
