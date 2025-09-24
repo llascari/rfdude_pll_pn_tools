@@ -1,5 +1,5 @@
-%% pn_plotcompare_1a
-%% new version 20250923LL
+%% gui_pn_plotcompare_1a
+%% new version 20250924LL
 %20220419 LL
 %create something for reading data files and comparing them for presentation purposes
 %
@@ -8,11 +8,22 @@
 
 clear
 close all;
-load('datfiles_local/e5052b_example_pndata.mat');
+
+display('Prompting for the first file');
+
+[fname,fpath,fltidx]=uigetfile("*.mat");
+
+load(strcat(fpath,fname));
 pn1=pn_struct;
 
-load('datfiles_local/pxa_example_pndata.mat');
+display('Prompting for the second file');
+
+[fname,fpath,fltidx]=uigetfile("*.mat");
+
+load(strcat(fpath,fname));
 pn2=pn_struct;
+
+
 
 figure;
 	

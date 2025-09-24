@@ -8,7 +8,7 @@
 % device A
 pn_struct.f=  [1e3 2e3 5e3 1e4 2e4  5e4 1e5  2e5  5e5  1e6  1e7 1e8];
 pn_struct.n=[-60 -58 -68 -82 -93 -101 -109 -114 -124 -129 -149 -149];
-
+pn_struct.name='artificial device A';
 save('datfiles_local/device_a.mat','pn_struct');
 clear;
 
@@ -17,6 +17,7 @@ clear;
 pn_struct.f=  [1e3 2e3 5e3 1e4 2e4  5e4 1e5  2e5  5e5  1e6  1e7 1e8];
 pn_struct.n=[  -95 -95 -95 -97 -97 -105 -117 -117 -124 -124 -145 -150];
 
+pn_struct.name='artificial device B';
 save('datfiles_local/device_b.mat','pn_struct');
 clear;
 
@@ -25,7 +26,7 @@ clear;
 %CVSO-914-1000 (crystek)
 pn_struct.f=  [1e3   1e4  1e5  1e6  1e7 1e8];
 pn_struct.n=[  -105 -138 -150 -160 -170 -170];
-
+pn_struct.name='VCSO data entered';
 save('datfiles_local/vcso_1G.mat','pn_struct');
 clear;
 
@@ -36,6 +37,7 @@ clear;
 pn_struct.f=  [1e3   2e3  5e3  1e4  2e4  5e4  1e5  2e5  5e5  1e6  1e7 1e8];
 pn_struct.n=[  -111 -112 -112 -112 -111 -110 -109 -111 -120 -130 -145 -150];
 
+pn_struct.name='ltc synth';
 save('datfiles_local/ltc_synth.mat','pn_struct');
 clear;
 
