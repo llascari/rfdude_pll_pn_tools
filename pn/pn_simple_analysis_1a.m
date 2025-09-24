@@ -52,8 +52,9 @@ grid on; grid minor;
 ll2=100e3;
 int_noise=integrate_ssb_pnoise(x,pn_dBcHz,ll2,ul);
 EVM_tot=20*log10(int_noise)
-PN_int_deg=int_noise*(180/pi)
-
+PN_int_deg=int_noise*(180/pi)                 
+%%TODO which lower limit, ll2, or ll for RFM
+residual_FM_Hz=calculate_residual_fm(x,pn_dBcHz,ll,ul)
 
 
 ll_points=[1e3 2e3 5e3 1e4 2e4 5e4 1e5 2e5 5e5 1e6];
