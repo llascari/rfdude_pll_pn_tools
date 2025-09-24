@@ -29,7 +29,7 @@ btn
 
 if (strcmp(btn,'pxa')       )
 	source_flag=1;
-elseif (strcmp(btn,'e5052b')
+elseif (strcmp(btn,'e5052b') )
 source_flag=2; %E5052b
 end
 
