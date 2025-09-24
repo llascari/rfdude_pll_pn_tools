@@ -14,13 +14,14 @@ clear;
 
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
-file_input=csvread(strcat(fpath,fname))
+file_input=csvread(strcat(fpath,fname));
 
 [file_basename rem ]=strtok(fname,'.'); %strip off extension
 
 %TODO -- come up with auto detect file type someday
-btn=questdlg('which instrument?','Instrument','pxa','e5052b','e5052b')
-btn
+%last entry is the default selected.  if that's not entered, it defauts to yes/no, which is dumb.
+btn=questdlg('which instrument?','Instrument','pxa','e5052b','e5052b') ;
+%btn
 
 %%TODO hack until I can figure out a better plan
 %

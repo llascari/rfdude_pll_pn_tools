@@ -49,7 +49,7 @@ grid on; grid minor;
 
 
 %% the integration function actually returns integrated phase error in radians, so 20*log10 to get EVM  or  1/SNR, or square it to get the power.
-ll2=100e3;
+ll2=ll;
 int_noise=integrate_ssb_pnoise(x,pn_dBcHz,ll2,ul);
 EVM_tot=20*log10(int_noise)
 PN_int_deg=int_noise*(180/pi)                 
