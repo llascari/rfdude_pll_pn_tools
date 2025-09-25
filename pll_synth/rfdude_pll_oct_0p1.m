@@ -43,3 +43,11 @@ fstart_main_Hz=10;
 fstop_main_Hz=10e6;
 fsweep_main_pts=101;
 fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
+
+Gpd_temp=g_pd(fmain_Hz,Fref_Hz);
+
+figure; subplot(2,1,1); semilogx(fmain_Hz,20*log10(abs(Gpd_temp)));
+ subplot(2,1,2); semilogx(fmain_Hz,angle(Gpd_temp));
+
+
+
