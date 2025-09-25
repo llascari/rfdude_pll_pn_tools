@@ -4,8 +4,9 @@
 %Copyright 2025 Lance Lascari / RFdude.com LLC       %
 
 function [h]=g_pd(f,fref)
-%h=zeros(length(f),1) ;                            
-h=(1-exp(-2*pi*f*1i*1/fref))/((2*pi*f*1i)/fref)
 
+for ii=1:length(f)
+h(ii)=(1-exp(-2*pi*f(ii)*1i*1/fref))/((2*pi*f(ii)*1i)/fref);
+end
 
 endfunction

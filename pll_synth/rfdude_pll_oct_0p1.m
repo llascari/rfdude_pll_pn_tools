@@ -38,3 +38,8 @@ PM_desired_deg=55; %Phase margin "phi_sub_p" in original
 %
 %Phase detector transfer function
 
+%main freq range
+fstart_main_Hz=10;
+fstop_main_Hz=10e6;
+fsweep_main_pts=101;
+fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
