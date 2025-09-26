@@ -9,4 +9,4 @@ for ii=1:length(fofs)
 n(ii)=(10^(Pref/20))/(fofs(ii)/fref_ofs)      ;
 end
 
-endfunction
+end %function
