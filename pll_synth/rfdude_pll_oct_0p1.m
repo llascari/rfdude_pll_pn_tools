@@ -57,27 +57,11 @@ fstop_main_Hz=10e6;
 fsweep_main_pts=401; %100000; %3201;
 fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
 
-Gpd_temp=g_pd(fmain_Hz,Fref_Hz);
-fignum=fignum+1;
-h_Gpd=figure(fignum); subplot(2,1,1); semilogx(fmain_Hz,20*log10(abs(Gpd_temp)));
- subplot(2,1,2); semilogx(fmain_Hz,(180/pi)*angle(Gpd_temp));
-
-
-%       fignum=fignum+1;
-%h_Gpd=figure(fignum); subplot(2,1,1); semilogx(fmain_Hz,20*log10(abs(Gpd_temp)));
-% subplot(2,1,2); semilogx(fmain_Hz,(180/pi)*angle(Gpd_temp));
-    
-
-
 %%%%%%%%%%
 %compensate phase margin request accounting for delay in phase detector
-
 PM_desired_adjusted_deg=PM_desired_deg-(180/pi)*angle(g_pd(BW_desired_Hz,Fref_Hz)) 
 
-
-
 %%% analysis/synthesis
-
 wp=((2*pi))*BW_desired_Hz               %units= radians/sec
 tau1=((sec((pi/180)*PM_desired_adjusted_deg)-tan((pi/180)*PM_desired_adjusted_deg))/wp) %units seconds
 
@@ -111,7 +95,7 @@ H=1/N
 for ii=1:length(fmain_Hz)
 Zfil(ii)=(1+(R2*2*pi*fmain_Hz(ii)*1i*C2))/(2*pi*fmain_Hz(ii)*1i*(C2+ C1 + R2*2*pi*fmain_Hz(ii)*1i*C1*C2));
 Zfil3_basic(ii)=(Zfil(ii)*(1/(2*pi*1i*C3*fmain_Hz(ii))))/((Zfil(ii)+R3+(1/(2*pi*1i*C3*fmain_Hz(ii)))));
-G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt))/((2*pi*1i*fmain_Hz(ii)))*Gpd_temp(ii);
+G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt))/((2*pi*1i*fmain_Hz(ii)))*g_pd(fmain_Hz(ii),Fref_Hz);
 Gol(ii)=G(ii)*H;
 Gcl(ii)=(G(ii)/(1+(G(ii)*H)))*H;
 end
