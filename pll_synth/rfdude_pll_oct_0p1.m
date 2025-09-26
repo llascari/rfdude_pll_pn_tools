@@ -142,3 +142,18 @@ Temp=300; %K
 Vn_R3=rnoise(R3,Temp);       %volts   in 1 Hz bw:w
 Vn_R2=rnoise(R2,Temp);       %volts   in 1 Hz bw:w
 
+%% there are several functions/vectors to compute, so do another loop
+for ii=1:length(fmain_Hz)
+%%R2 noise analysis
+Zr2_1(ii)=R2+(1/(2*pi*fmain_Hz(ii)*1i*C2)); %R2 in series with C2
+Zr2_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C1); %C1 impedance
+Zr2_3(ii)=R3; % R3, duh
+Zr2_4(ii)=1/(2*pi*1i*fmain_Hz(ii)*C3); % C3 impedance
+Zr2_5(ii)=((Zr2_2(ii)*(Zr2_3(ii)+Zr2_4(ii))))/(Zr2_2(ii)+(Zr2_3(ii)+Zr2_4(ii))); %Z1 in parallel with Z2 and R3+C3
+%Zr
+Vnoise_R2(ii)=Vn_R2*(Zr2_5(ii)/(Zr2_1(ii)+Zr2_5(ii)  ))*(Zr2_4(ii)/(Zr2_3(ii)+Zr2_4(ii)));
+	
+
+
+end
+
