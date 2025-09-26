@@ -54,7 +54,7 @@ fignum=0;
 %main freq range
 fstart_main_Hz=10;
 fstop_main_Hz=10e6;
-fsweep_main_pts=201; %100000; %3201;
+fsweep_main_pts=401; %100000; %3201;
 fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
 
 Gpd_temp=g_pd(fmain_Hz,Fref_Hz);
@@ -109,9 +109,9 @@ _C1=0;  _C2=0;  _R2=0;  _R3=0;  _C3=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 H=1/N
 for ii=1:length(fmain_Hz)
-Zfil(ii)=(1+(R2*2*pi*fmain_Hz(ii)*1i*C2))/(2*pi*fmain_Hz(ii)*1i*(C2+ C1 + R2*2*pi*1i*C1*C2));
+Zfil(ii)=(1+(R2*2*pi*fmain_Hz(ii)*1i*C2))/(2*pi*fmain_Hz(ii)*1i*(C2+ C1 + R2*2*pi*fmain_Hz(ii)*1i*C1*C2));
 Zfil3_basic(ii)=(Zfil(ii)*(1/(2*pi*1i*C3*fmain_Hz(ii))))/((Zfil(ii)+R3+(1/(2*pi*1i*C3*fmain_Hz(ii)))));
-G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt)/(2*pi*1i*fmain_Hz(ii)))*Gpd_temp(ii);
+G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt))/((2*pi*1i*fmain_Hz(ii)))*Gpd_temp(ii);
 Gol(ii)=G(ii)*H;
 Gcl(ii)=(G(ii)/(1+(G(ii)*H)))*H;
 end
@@ -123,4 +123,4 @@ end
  subplot(4,1,4); semilogx(fmain_Hz,(180/pi)*angle(Gcl));      
 [Golmin BW_idx]= min(abs(20*log10(abs(Gol)))) ;
 BW_actual=fmain_Hz(BW_idx)
-PM_actual=(180/pi)*arg(-1*Gol(BW_idx))
+PM_actual=(180/pi)*arg(1*-1*Gol(BW_idx))
