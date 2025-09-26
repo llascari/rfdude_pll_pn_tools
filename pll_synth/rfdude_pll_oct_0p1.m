@@ -166,7 +166,9 @@ N_out_R3(ii)=(mR3(ii)/2) *abs((1/(1+Gol(ii))));
 
 N_pd(ii)=(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
 
-
+Ntot_no_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
+Ntot_w_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
+ %sqrt((abs(N_out_R2(ii)))^2 sqrt((abs(N_out_R3(ii)))^2
 end
 
 if 0 %hide...
@@ -191,6 +193,16 @@ xlabel('offset freq (Hz)');
 ylabel('dBc/Hz');
 set(leg1,'Interpreter','none');        
 end
-           
+   if 1 %unhide...
+ fignum=fignum+1;
+ %Volts_to_uVolts=1e-6;
+figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Ntot_no_R)) ;
+grid on; grid minor;
+title('Totals');
+leg1=legend('Total no R','Total XX','total XX');
+xlabel('offset freq (Hz)');
+ylabel('dBc/Hz');
+set(leg1,'Interpreter','none');        
+end             
 
 
