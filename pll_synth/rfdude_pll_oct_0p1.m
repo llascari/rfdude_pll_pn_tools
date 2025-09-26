@@ -1,5 +1,9 @@
 %% rfdude_pll_oct_0p1.m
-%20250924 LL -- start translation
+%20250924 LL -- start translation 
+%%20250926 LL -- basic filter synthesis, all basic noise prediction (including resistor noise) working fine
+%TODO:write phase noise data structure out to .mat file
+%TODO:optionally read phase noise data structure in for reference, VCO
+%TODO:
 %NOTE: intention is GNU Octave first compatibility, Matlab second
 %based on old work in Mathcad for PLL loop filter synthesis and analysis
 %prediction, etc of phase noise.
