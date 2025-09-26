@@ -101,3 +101,19 @@ C2=C1*((tau2/tau1)-1)    %units Farads
 R2=tau2/C2  %units ohms
 R3=2*R2    % units ohms, rule of thumb, TBD
 C3=tau3/R3  %units Farads
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Override section (remove underscores to override above %%%%%%%%%%%%%%%%%%%%%%%%%
+_C1=0;  _C2=0;  _R2=0;  _R3=0;  _C3=0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
+H=1/2
+for ii=1:length(fmain_Hz)
+Zfil(ii)=(1+(R2*2*pi*fmain_Hz(ii)*1i*C2))/(2*pi*fmain_Hz(ii)*1i*(C2+ C1 + R2*2*pi*1i*C1*C2));
+Zfil3_basic(ii)=(Zfil(ii)*(1/(2*pi*1i*C3*fmain_Hz(ii))))/((Zfil(ii)+R3+(1/(2*pi*1i*C3*fmain_Hz(ii)))));
+G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt)/(2*pi*1i*fmain_Hz(ii)))*Gpd_temp(ii);
+Gol(ii)=G(ii)*H;
+Gcl(ii)=(G(ii)/(1+G(ii)*H))*H;
+end
+
+
+
