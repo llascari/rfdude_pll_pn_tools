@@ -9,4 +9,4 @@ for ii=1:length(f)
 h(ii)=(1-exp(-2*pi*f(ii)*1i*1/fref))/((2*pi*f(ii)*1i)/fref);
 end
 
-endfunction
+end
