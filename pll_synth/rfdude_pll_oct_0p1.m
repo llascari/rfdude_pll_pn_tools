@@ -86,7 +86,7 @@ R2=tau2/C2  %units ohms
 R3=2*R2    % units ohms, rule of thumb, TBD
 C3=tau3/R3  %units Farads
 F3rdpole=1/(2*pi*R3*C3)
-
+%%NOTE: Loop filter topology:  Charge pump output: shunt C1, Shunt R2,C2, Series R3,Shunt C3 ->VCO tuning input
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Override section (remove underscores to override above %%%%%%%%%%%%%%%%%%%%%%%%%
 _C1=0;  _C2=0;  _R2=0;  _R3=0;  _C3=0;
@@ -136,8 +136,9 @@ ylabel('ssb Noise (dBc/Hz)');
 set(leg1,'Interpreter','none');       
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%% See the PDF of the mathcad analysis for further explanation (www.RFdude.com)
 k=1.38e-23;  %Boltzmann's constant, joules/K 
 Temp=300; %K
 Vn_R3=rnoise(R3,Temp);       %volts   in 1 Hz bw:w
+Vn_R2=rnoise(R2,Temp);       %volts   in 1 Hz bw:w
 
