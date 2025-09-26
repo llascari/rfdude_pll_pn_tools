@@ -158,9 +158,18 @@ Zr3_1(ii)=(((1/(2*pi*fmain_Hz(ii)*1i*C1))*(R2+(1/(2*pi*fmain_Hz(ii)*1i*C2))))/(R
 Zr3_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C3); %impedance of C3
 Vnoise_R3(ii)=Vn_R3*(Zr3_2(ii)/(Zr3_1(ii)+Zr3_2(ii)));
 
+%%Modulation indices of resistor noise
+mR2(ii)=(sqrt(2)*Vnoise_R2(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
+mR3(ii)=(sqrt(2)*Vnoise_R3(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
+N_out_R2(ii)=(mR2(ii)/2) *abs((1/(1+Gol(ii))));
+N_out_R3(ii)=(mR3(ii)/2) *abs((1/(1+Gol(ii))));
+
+
+
 
 end
 
+if 0 %hide...
  fignum=fignum+1;
  Volts_to_uVolts=1e-6;
 figure(fignum); semilogx(fmain_Hz,abs(Vnoise_R2)/Volts_to_uVolts,fmain_Hz,abs(Vnoise_R3)/Volts_to_uVolts) ;
@@ -170,3 +179,18 @@ leg1=legend('R2','R3');
 xlabel('offset freq (Hz)');
 ylabel('uV RMS');
 set(leg1,'Interpreter','none');        
+end
+  if 1 %unhide...
+ fignum=fignum+1;
+ %Volts_to_uVolts=1e-6;
+figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3)) ;
+grid on; grid minor;
+title('vco output resistor noise');
+leg1=legend('R2','R3');
+xlabel('offset freq (Hz)');
+ylabel('dBc/Hz');
+set(leg1,'Interpreter','none');        
+end
+           
+
+
