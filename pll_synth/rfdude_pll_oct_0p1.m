@@ -98,6 +98,7 @@ Zfil3_basic(ii)=(Zfil(ii)*(1/(2*pi*1i*C3*fmain_Hz(ii))))/((Zfil(ii)+R3+(1/(2*pi*
 G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt))/((2*pi*1i*fmain_Hz(ii)))*g_pd(fmain_Hz(ii),Fref_Hz);
 Gol(ii)=G(ii)*H;
 Gcl(ii)=(G(ii)/(1+(G(ii)*H)))*H;
+Gol_vcof(ii)=1/(1+Gol(ii));    %use this later for the noise shaping
 end
 
  fignum=fignum+1; figure(fignum); 
@@ -111,6 +112,7 @@ PM_actual=(180/pi)*arg(1*-1*Gol(BW_idx))
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
+%% TCXO first
 Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
 Ntcxo_loop=Ntcxo.*Gcl;
 fignum=fignum+1;
@@ -120,4 +122,13 @@ leg1=legend('TCXO','TCXO shaped by loop');
 xlabel('offset freq (Hz)');
 ylabel('ssb Noise (dBc/Hz)');
 set(leg1,'Interpreter','none');
-
+%% VCO next, shaped differently
+Nvco=noise_basic(fmain_Hz,Fvco_ref_offset_Hz,Nvco_ref_dBc);
+Nvco_loop=Nvco.*Gol_vcof;
+fignum=fignum+1;
+figure(fignum); semilogx(fmain_Hz,20*log10(abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
+grid on; grid minor;
+leg1=legend('VCO','VCO shaped by loop');
+xlabel('offset freq (Hz)');
+ylabel('ssb Noise (dBc/Hz)');
+set(leg1,'Interpreter','none');       
