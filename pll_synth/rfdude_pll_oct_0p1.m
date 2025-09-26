@@ -164,7 +164,7 @@ mR3(ii)=(sqrt(2)*Vnoise_R3(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
 N_out_R2(ii)=(mR2(ii)/2) *abs((1/(1+Gol(ii))));
 N_out_R3(ii)=(mR3(ii)/2) *abs((1/(1+Gol(ii))));
 
-
+N_pd(ii)=(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
 
 
 end
@@ -183,10 +183,10 @@ end
   if 1 %unhide...
  fignum=fignum+1;
  %Volts_to_uVolts=1e-6;
-figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3)) ;
+figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
 grid on; grid minor;
-title('vco output resistor noise');
-leg1=legend('R2','R3');
+title('vco output resistor noise,PD noise');
+leg1=legend('R2','R3','Phase Detector');
 xlabel('offset freq (Hz)');
 ylabel('dBc/Hz');
 set(leg1,'Interpreter','none');        
