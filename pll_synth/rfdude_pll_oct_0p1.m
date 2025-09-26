@@ -89,3 +89,15 @@ wc_term1=    ((tan((pi/180)*PM_desired_adjusted_deg)*(tau1+tau3))/(((tau1+tau3)^
 wc_term2=((sqrt((((tau1+tau3)^2 +(tau1*tau3))/(tan((pi/180)*PM_desired_adjusted_deg)*(tau1+tau3))^2)+1))-1);
 wc=wc_term1*wc_term2             %units =1/sec (radians/sec?)
 
+tau2=1/((wc^2)*(tau1+tau3))              %units seconds
+
+%Filter synth   %%NOTE: components can be overriden lower
+N=fout_desired_Hz/Fref_Hz
+R=F_tcxo_Hz/Fref_Hz
+
+C1=((Kphi_A_cycle*Kvco_Hz_volt*tau1)/(((wc^2)*N*tau2)))*sqrt((1+(wc^2 * tau2^2))/(((1+(wc^2 *tau1^2)*(1+(wc^2 * tau3^2))))))    %units Farads
+
+C2=C1*((tau2/tau1)-1)    %units Farads
+R2=tau2/C2  %units ohms
+R3=2*R2    % units ohms, rule of thumb, TBD
+C3=tau3/R3  %units Farads
