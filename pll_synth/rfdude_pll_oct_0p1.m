@@ -88,8 +88,8 @@ C3=tau3/R3  %units Farads
 F3rdpole=1/(2*pi*R3*C3)
 %%NOTE: Loop filter topology:  Charge pump output: shunt C1, Shunt R2,C2, Series R3,Shunt C3 ->VCO tuning input
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Override section (remove underscores to override above %%%%%%%%%%%%%%%%%%%%%%%%%
-_C1=0;  _C2=0;  _R2=0;  _R3=0;  _C3=0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Override section (remove redundant chars to override above %%%%%%%%%%%%%%%%%%%%%%%%%
+CC1=0;  CC2=0;  RR2=0;  RR3=0;  CC3=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 H=1/N
 for ii=1:length(fmain_Hz)
@@ -153,7 +153,20 @@ Zr2_5(ii)=((Zr2_2(ii)*(Zr2_3(ii)+Zr2_4(ii))))/(Zr2_2(ii)+(Zr2_3(ii)+Zr2_4(ii)));
 %Zr
 Vnoise_R2(ii)=Vn_R2*(Zr2_5(ii)/(Zr2_1(ii)+Zr2_5(ii)  ))*(Zr2_4(ii)/(Zr2_3(ii)+Zr2_4(ii)));
 	
+%%R3 noise analysis
+Zr3_1(ii)=(((1/(2*pi*fmain_Hz(ii)*1i*C1))*(R2+(1/(2*pi*fmain_Hz(ii)*1i*C2))))/(R2+(1/(2*pi*fmain_Hz(ii)*1i*C1))+(1/(2*pi*fmain_Hz(ii)*1i*C2))))+R3;  %parallel comb of C1 and C2 series with R2, plus R3 in series)
+Zr3_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C3); %impedance of C3
+Vnoise_R3(ii)=Vn_R3*(Zr3_2(ii)/(Zr3_1(ii)+Zr3_2(ii)));
 
 
 end
 
+ fignum=fignum+1;
+ Volts_to_uVolts=1e-6;
+figure(fignum); semilogx(fmain_Hz,abs(Vnoise_R2)/Volts_to_uVolts,fmain_Hz,abs(Vnoise_R3)/Volts_to_uVolts) ;
+grid on; grid minor;
+title('baseband resistor noise');
+leg1=legend('R2','R3');
+xlabel('offset freq (Hz)');
+ylabel('uV RMS');
+set(leg1,'Interpreter','none');        
