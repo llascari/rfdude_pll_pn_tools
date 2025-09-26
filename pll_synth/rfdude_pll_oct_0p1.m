@@ -108,3 +108,16 @@ end
 [Golmin BW_idx]= min(abs(20*log10(abs(Gol)))) ;
 BW_actual=fmain_Hz(BW_idx)
 PM_actual=(180/pi)*arg(1*-1*Gol(BW_idx))
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
+Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
+Ntcxo_loop=Ntcxo.*Gcl;
+fignum=fignum+1;
+figure(fignum); semilogx(fmain_Hz,20*log10(abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
+grid on; grid minor;
+leg1=legend('TCXO','TCXO shaped by loop');
+xlabel('offset freq (Hz)');
+ylabel('ssb Noise (dBc/Hz)');
+set(leg1,'Interpreter','none');
+
