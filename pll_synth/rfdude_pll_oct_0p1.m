@@ -83,4 +83,9 @@ tau1=((sec((pi/180)*PM_desired_adjusted_deg)-tan((pi/180)*PM_desired_adjusted_de
 
 tau3 =sqrt(  ((10^(ATTEN_dB/10))-1)/(2*pi*Fref_Hz)^2)                         %units seconds
 
-wc= (   ((tan((180/pi)*PM_desired_adjusted_deg)*(tau1+tau3))/((tau1+tau3)^2 +(tau1*tau3)))* ((sqrt((tau1+tau3
+%break this into two terms to make it manageable
+wc_term1=    ((tan((pi/180)*PM_desired_adjusted_deg)*(tau1+tau3))/(((tau1+tau3)^2) +(tau1*tau3)))   ;
+
+wc_term2=((sqrt((((tau1+tau3)^2 +(tau1*tau3))/(tan((pi/180)*PM_desired_adjusted_deg)*(tau1+tau3))^2)+1))-1);
+wc=wc_term1*wc_term2             %units =1/sec (radians/sec?)
+
