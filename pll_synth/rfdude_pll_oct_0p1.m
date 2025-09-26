@@ -108,7 +108,7 @@ end
  subplot(4,1,4); semilogx(fmain_Hz,(180/pi)*angle(Gcl));      
 [Golmin BW_idx]= min(abs(20*log10(abs(Gol)))) ;
 BW_actual=fmain_Hz(BW_idx)
-PM_actual=(180/pi)*arg(1*-1*Gol(BW_idx))
+PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
