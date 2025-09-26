@@ -196,10 +196,10 @@ end
    if 1 %unhide...
  fignum=fignum+1;
  %Volts_to_uVolts=1e-6;
-figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Ntot_no_R)) ;
+figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R)) ;
 grid on; grid minor;
 title('Totals');
-leg1=legend('Total no R','Total XX','total XX');
+leg1=legend('Total no R','Total');
 xlabel('offset freq (Hz)');
 ylabel('dBc/Hz');
 set(leg1,'Interpreter','none');        
