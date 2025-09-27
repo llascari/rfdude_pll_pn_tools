@@ -25,16 +25,47 @@
 %NOTE: Units were one of the wonderful features of MathCad -- we'll
 %have to work to maintain consistency
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% system inputs %%%%%%%%%%%%%%%%%%%%%%%%%
-startuptest=exist('pll_input_s');
+startuptest=exist('pll_inputs_s');
 if(startuptest==1)
-	disp('pll_input_s structure exists ');
-	
+	disp('pll_inputs_s structure exists ');
+	%% NOTE: this is a little clunky -- lets this matlab code run stand alone (parameters in the "else" below.. but also lets this get called after the inputs exist, allowing iteration on that file and not touching this one...  seems like a cleaner way than trying to make a function that passes everything in and out
+	fout_desired_Hz=pll_inputs_s.fout_desired_Hz;  % desired final output frequency (multiplier divider output
+	mult=pll_inputs_s.mult; %set to 1 for normal
+	Fref_Hz=pll_inputs_s.Fref_Hz; %reference/phase detector frequency (PFD freq)
+	Kvco_Hz_volt=pll_inputs_s.Kvco_Hz_volt;  %tuning sensitivity of the VCO in Hz/volt
+	Kphi_A_cycle=pll_inputs_s.Kphi_A_cycle; %amps/cycle
+
+	BW_desired_Hz=pll_inputs_s.BW_desired_Hz; %desired loop bandwidth
+	PM_desired_deg=pll_inputs_s.PM_desired_deg; %Phase margin "phi_sub_p" in original
+	ATTEN_dB=pll_inputs_s.ATTEN_dB; %additional attenuation requested by the 3rd pole in the filter (don't ask for too much)
+	%also, usually this is of minimal value
+	%% Setup 
+	%some of this is just to match the old mathcad stuff, it isn't as relevant
+	F_tcxo_Hz=pll_inputs_s.F_tcxo_Hz;
+	Ntcxo_ref_dBc=pll_inputs_s.Ntcxo_ref_dBc; %phase noise reference point
+	Ftcxo_ref_offset_Hz=pll_inputs_s.Ftcxo_ref_offset_Hz;
+
+	Nvco_ref_dBc=pll_inputs_s.Nvco_ref_dBc; %VCO open loop noise
+	Fvco_ref_offset_Hz=pll_inputs_s.Fvco_ref_offset_Hz; 
+	Npd_ref_dBc=pll_inputs_s.Npd_ref_dBc; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
+
+	def_filename=pll_inputs_s.def_filename; %default results file saved (phase noise)
+	fstart_main_Hz=pll_inputs_s.fstart_main_Hz;
+	fstop_main_Hz=pll_inputs_s.fstop_main_Hz;
+	fsweep_main_pts=pll_inputs_s.fsweep_main_pts; %100000; %3201;
+         filter_override=pll_inputs_s.filter_override;
+	%% if filter override is set, these values will be substituted after
+	%the synthesis stuff in the analysis
+         CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
+	 RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
+                                                                     
+
+
 else
-        clc; clear; close all;
+	clc; clear; close all;
 	disp("pll_input_s structure doesn't exist, using inputs provided below");
 	fout_desired_Hz=445e6;  % desired final output frequency (multiplier divider output
 	mult=1; %set to 1 for normal
-	fout_Hz=fout_desired_Hz*1/mult;   %VCO output frequency
 	Fref_Hz=100e3; %reference/phase detector frequency (PFD freq)
 	Kvco_Hz_volt=20*(1e6/1);  %tuning sensitivity of the VCO in Hz/volt
 	Kphi_A_cycle=1e-3; %amps/cycle
@@ -56,21 +87,28 @@ else
 	Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
 
 	def_filename='_rfd_pll_out_default.mat'; %default results file saved (phase noise)
+	fstart_main_Hz=10;
+	fstop_main_Hz=10e6;
+	fsweep_main_pts=401; %100000; %3201;
+
+	filter_override=0;
+	%% if filter override is set, these values will be substituted after
+	%the synthesis stuff in the analysis
+         CC1=1e-12; CC2=1e-12; RR2=1; CC3=1e-12; RR3=1;
+
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-fignum=0;
 %
 %
 %Phase detector transfer function
 
 %main freq range
-fstart_main_Hz=10;
-fstop_main_Hz=10e6;
-fsweep_main_pts=401; %100000; %3201;
 fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
 
+fout_Hz=fout_desired_Hz*1/mult;   %VCO output frequency
+fignum=0;
 %%%%%%%%%%
 %compensate phase margin request accounting for delay in phase detector
 PM_desired_adjusted_deg=PM_desired_deg-(180/pi)*angle(g_pd(BW_desired_Hz,Fref_Hz)) 
@@ -103,7 +141,10 @@ F3rdpole=1/(2*pi*R3*C3)
 %%NOTE: Loop filter topology:  Charge pump output: shunt C1, Shunt R2,C2, Series R3,Shunt C3 ->VCO tuning input
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Override section (remove redundant chars to override above %%%%%%%%%%%%%%%%%%%%%%%%%
-CC1=0;  CC2=0;  RR2=0;  RR3=0;  CC3=0;
+%The replacement values are above in the common settings groups
+if(filter_override==1)
+C1=CC1;  C2=CC2;  R2=RR2;  R3=RR3;  C3=CC3;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 H=1/N
 for ii=1:length(fmain_Hz)
