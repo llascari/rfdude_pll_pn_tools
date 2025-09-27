@@ -263,7 +263,7 @@ end
 
 %%file write (comment out if not wanted)
 pn_struct.f=fmain_Hz;
-pn_struct.n=Ntot_w_R;
+pn_struct.n=20*log10(Ntot_w_R);
 pn_struct.name='default output from RFdude.com PLL worksheet';
 save(def_filename,'pn_struct');
 

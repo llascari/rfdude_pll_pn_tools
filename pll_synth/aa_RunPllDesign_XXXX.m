@@ -25,6 +25,7 @@ pll_inputs_s.fstop_main_Hz=10e6;
 pll_inputs_s.fsweep_main_pts=401; %100000; %3201;
 
 
+
 pll_inputs_s.filter_override=0;
 pll_inputs_s.CC1=1e-12;
 pll_inputs_s.CC2=1e-12;
@@ -33,5 +34,15 @@ pll_inputs_s.CC3=1e-12;
 pll_inputs_s.RR3=1;
 
 
-
 rfdude_pll_oct_0p1
+addpath("../pn")
+
+%% basic analysis
+% phase noise 
+ll=100;  ul=1e6;  %limits of integration
+npts=1+(50*(log10(pn_struct.f(end))-log10(pn_struct.f(1))));
+x=logspace(log10(pn_struct.f(1)),log10(pn_struct.f(end)),npts);
+pn_dBc_Hz=interp1(log10(pn_struct.f),pn_struct.n,log10(x));
+int_noise=integrate_ssb_pnoise(x,pn_dBc_Hz,ll,ul)
+EVM_tot=20*log10(int_noise)
+residual_FM_Hz=calculate_residual_fm(x,pn_dBc_Hz,ll,ul)

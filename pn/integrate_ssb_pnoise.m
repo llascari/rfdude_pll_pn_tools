@@ -6,11 +6,12 @@
 %shows pretty good agreement with mathcad version using the same input data... bonus.
 
 %% ***the return value is actually itegrated phase error in radians
+%DOUBLE_SIDED
 %to get EVM/snr do a 20*log10 
 %Copyright 2025 Lance Lascari / RFdude.com LLC       %
 
 function [ntot]=integrate_ssb_pnoise(f,p_dBc,ll,ul)
-
+disp('note --double sided noise /');
 	integ_indices=find(f>=ll & f<=ul);
 	f_in=f(integ_indices);
 	%num_integ_points=length(f_in)	
