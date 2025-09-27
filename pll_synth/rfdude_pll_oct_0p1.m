@@ -47,7 +47,7 @@ Nvco_ref_dBc=-115; %VCO open loop noise
 Fvco_ref_offset_Hz=10e3; 
 Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
 
-
+def_filename='_rfd_pll_out_default.mat'; %default results file saved (phase noise)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 fignum=0;
@@ -213,5 +213,5 @@ end
 pn_struct.f=fmain_Hz;
 pn_struct.n=Ntot_w_R;
 pn_struct.name='default output from RFdude.com PLL worksheet';
-save('rfd_pll_out_default.mat','pn_struct');
+save(def_filename,'pn_struct');
 
