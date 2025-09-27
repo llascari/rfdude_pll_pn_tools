@@ -17,39 +17,49 @@
 %I've never used one in all these years.
 %
 %Copyright 2025 Lance Lascari / RFdude.com LLC
-clc;
-clear
-close all;
+%clc;
+%clear
+%close all;
+
 
 %NOTE: Units were one of the wonderful features of MathCad -- we'll
 %have to work to maintain consistency
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% system inputs %%%%%%%%%%%%%%%%%%%%%%%%%
-fout_desired_Hz=445e6;  % desired final output frequency (multiplier divider output
-mult=1; %set to 1 for normal
-fout_Hz=fout_desired_Hz*1/mult;   %VCO output frequency
-Fref_Hz=100e3; %reference/phase detector frequency (PFD freq)
-Kvco_Hz_volt=20*(1e6/1);  %tuning sensitivity of the VCO in Hz/volt
-Kphi_A_cycle=1e-3; %amps/cycle
-                                                                
-BW_desired_Hz=2e3; %desired loop bandwidth
-PM_desired_deg=55; %Phase margin "phi_sub_p" in original
-ATTEN_dB=0.01; %additional attenuation requested by the 3rd pole in the filter (don't ask for too much)
-%also, usually this is of minimal value
+startuptest=exist('pll_input_s');
+if(startuptest==1)
+	disp('pll_input_s structure exists ');
+	
+else
+        clc; clear; close all;
+	disp("pll_input_s structure doesn't exist, using inputs provided below");
+	fout_desired_Hz=445e6;  % desired final output frequency (multiplier divider output
+	mult=1; %set to 1 for normal
+	fout_Hz=fout_desired_Hz*1/mult;   %VCO output frequency
+	Fref_Hz=100e3; %reference/phase detector frequency (PFD freq)
+	Kvco_Hz_volt=20*(1e6/1);  %tuning sensitivity of the VCO in Hz/volt
+	Kphi_A_cycle=1e-3; %amps/cycle
+
+	BW_desired_Hz=2e3; %desired loop bandwidth
+	PM_desired_deg=55; %Phase margin "phi_sub_p" in original
+	ATTEN_dB=0.01; %additional attenuation requested by the 3rd pole in the filter (don't ask for too much)
+	%also, usually this is of minimal value
 
 
-%% Setup 
-%some of this is just to match the old mathcad stuff, it isn't as relevant
-F_tcxo_Hz=12.8e6;
-Ntcxo_ref_dBc=-135; %phase noise reference point
-Ftcxo_ref_offset_Hz=100;
+	%% Setup 
+	%some of this is just to match the old mathcad stuff, it isn't as relevant
+	F_tcxo_Hz=12.8e6;
+	Ntcxo_ref_dBc=-135; %phase noise reference point
+	Ftcxo_ref_offset_Hz=100;
 
-Nvco_ref_dBc=-115; %VCO open loop noise
-Fvco_ref_offset_Hz=10e3; 
-Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
+	Nvco_ref_dBc=-115; %VCO open loop noise
+	Fvco_ref_offset_Hz=10e3; 
+	Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
 
-def_filename='_rfd_pll_out_default.mat'; %default results file saved (phase noise)
+	def_filename='_rfd_pll_out_default.mat'; %default results file saved (phase noise)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
+end
+
 fignum=0;
 %
 %
@@ -97,19 +107,19 @@ CC1=0;  CC2=0;  RR2=0;  RR3=0;  CC3=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 H=1/N
 for ii=1:length(fmain_Hz)
-Zfil(ii)=(1+(R2*2*pi*fmain_Hz(ii)*1i*C2))/(2*pi*fmain_Hz(ii)*1i*(C2+ C1 + R2*2*pi*fmain_Hz(ii)*1i*C1*C2));
-Zfil3_basic(ii)=(Zfil(ii)*(1/(2*pi*1i*C3*fmain_Hz(ii))))/((Zfil(ii)+R3+(1/(2*pi*1i*C3*fmain_Hz(ii)))));
-G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt))/((2*pi*1i*fmain_Hz(ii)))*g_pd(fmain_Hz(ii),Fref_Hz);
-Gol(ii)=G(ii)*H;
-Gcl(ii)=(G(ii)/(1+(G(ii)*H)))*H;
-Gol_vcof(ii)=1/(1+Gol(ii));    %use this later for the noise shaping
+	Zfil(ii)=(1+(R2*2*pi*fmain_Hz(ii)*1i*C2))/(2*pi*fmain_Hz(ii)*1i*(C2+ C1 + R2*2*pi*fmain_Hz(ii)*1i*C1*C2));
+	Zfil3_basic(ii)=(Zfil(ii)*(1/(2*pi*1i*C3*fmain_Hz(ii))))/((Zfil(ii)+R3+(1/(2*pi*1i*C3*fmain_Hz(ii)))));
+	G(ii)=((Kphi_A_cycle*Zfil3_basic(ii)*Kvco_Hz_volt))/((2*pi*1i*fmain_Hz(ii)))*g_pd(fmain_Hz(ii),Fref_Hz);
+	Gol(ii)=G(ii)*H;
+	Gcl(ii)=(G(ii)/(1+(G(ii)*H)))*H;
+	Gol_vcof(ii)=1/(1+Gol(ii));    %use this later for the noise shaping
 end
 
- fignum=fignum+1; figure(fignum); 
- subplot(4,1,1); semilogx(fmain_Hz,20*log10(abs(Gol)));
- subplot(4,1,2); semilogx(fmain_Hz,(180/pi)*angle(Gol)); 
-  subplot(4,1,3); semilogx(fmain_Hz,20*log10(abs(Gcl)));
- subplot(4,1,4); semilogx(fmain_Hz,(180/pi)*angle(Gcl));      
+fignum=fignum+1; figure(fignum); 
+subplot(4,1,1); semilogx(fmain_Hz,20*log10(abs(Gol)));
+subplot(4,1,2); semilogx(fmain_Hz,(180/pi)*angle(Gol)); 
+subplot(4,1,3); semilogx(fmain_Hz,20*log10(abs(Gcl)));
+subplot(4,1,4); semilogx(fmain_Hz,(180/pi)*angle(Gcl));      
 [Golmin BW_idx]= min(abs(20*log10(abs(Gol)))) ;
 BW_actual=fmain_Hz(BW_idx)
 PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
@@ -148,65 +158,65 @@ Vn_R2=rnoise(R2,Temp);       %volts   in 1 Hz bw:w
 
 %% there are several functions/vectors to compute, so do another loop
 for ii=1:length(fmain_Hz)
-%%R2 noise analysis
-Zr2_1(ii)=R2+(1/(2*pi*fmain_Hz(ii)*1i*C2)); %R2 in series with C2
-Zr2_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C1); %C1 impedance
-Zr2_3(ii)=R3; % R3, duh
-Zr2_4(ii)=1/(2*pi*1i*fmain_Hz(ii)*C3); % C3 impedance
-Zr2_5(ii)=((Zr2_2(ii)*(Zr2_3(ii)+Zr2_4(ii))))/(Zr2_2(ii)+(Zr2_3(ii)+Zr2_4(ii))); %Z1 in parallel with Z2 and R3+C3
-%Zr
-Vnoise_R2(ii)=Vn_R2*(Zr2_5(ii)/(Zr2_1(ii)+Zr2_5(ii)  ))*(Zr2_4(ii)/(Zr2_3(ii)+Zr2_4(ii)));
-	
-%%R3 noise analysis
-Zr3_1(ii)=(((1/(2*pi*fmain_Hz(ii)*1i*C1))*(R2+(1/(2*pi*fmain_Hz(ii)*1i*C2))))/(R2+(1/(2*pi*fmain_Hz(ii)*1i*C1))+(1/(2*pi*fmain_Hz(ii)*1i*C2))))+R3;  %parallel comb of C1 and C2 series with R2, plus R3 in series)
-Zr3_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C3); %impedance of C3
-Vnoise_R3(ii)=Vn_R3*(Zr3_2(ii)/(Zr3_1(ii)+Zr3_2(ii)));
+	%%R2 noise analysis
+	Zr2_1(ii)=R2+(1/(2*pi*fmain_Hz(ii)*1i*C2)); %R2 in series with C2
+	Zr2_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C1); %C1 impedance
+	Zr2_3(ii)=R3; % R3, duh
+	Zr2_4(ii)=1/(2*pi*1i*fmain_Hz(ii)*C3); % C3 impedance
+	Zr2_5(ii)=((Zr2_2(ii)*(Zr2_3(ii)+Zr2_4(ii))))/(Zr2_2(ii)+(Zr2_3(ii)+Zr2_4(ii))); %Z1 in parallel with Z2 and R3+C3
+	%Zr
+	Vnoise_R2(ii)=Vn_R2*(Zr2_5(ii)/(Zr2_1(ii)+Zr2_5(ii)  ))*(Zr2_4(ii)/(Zr2_3(ii)+Zr2_4(ii)));
 
-%%Modulation indices of resistor noise
-mR2(ii)=(sqrt(2)*Vnoise_R2(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
-mR3(ii)=(sqrt(2)*Vnoise_R3(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
-N_out_R2(ii)=(mR2(ii)/2) *abs((1/(1+Gol(ii))));
-N_out_R3(ii)=(mR3(ii)/2) *abs((1/(1+Gol(ii))));
+	%%R3 noise analysis
+	Zr3_1(ii)=(((1/(2*pi*fmain_Hz(ii)*1i*C1))*(R2+(1/(2*pi*fmain_Hz(ii)*1i*C2))))/(R2+(1/(2*pi*fmain_Hz(ii)*1i*C1))+(1/(2*pi*fmain_Hz(ii)*1i*C2))))+R3;  %parallel comb of C1 and C2 series with R2, plus R3 in series)
+	Zr3_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C3); %impedance of C3
+	Vnoise_R3(ii)=Vn_R3*(Zr3_2(ii)/(Zr3_1(ii)+Zr3_2(ii)));
 
-N_pd(ii)=(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
+	%%Modulation indices of resistor noise
+	mR2(ii)=(sqrt(2)*Vnoise_R2(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
+	mR3(ii)=(sqrt(2)*Vnoise_R3(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
+	N_out_R2(ii)=(mR2(ii)/2) *abs((1/(1+Gol(ii))));
+	N_out_R3(ii)=(mR3(ii)/2) *abs((1/(1+Gol(ii))));
 
-Ntot_no_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
-Ntot_w_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
- %sqrt((abs(N_out_R2(ii)))^2 sqrt((abs(N_out_R3(ii)))^2
+	N_pd(ii)=(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
+
+	Ntot_no_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
+	Ntot_w_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
+	%sqrt((abs(N_out_R2(ii)))^2 sqrt((abs(N_out_R3(ii)))^2
 end
 
 if 0 %hide...
- fignum=fignum+1;
- Volts_to_uVolts=1e-6;
-figure(fignum); semilogx(fmain_Hz,abs(Vnoise_R2)/Volts_to_uVolts,fmain_Hz,abs(Vnoise_R3)/Volts_to_uVolts) ;
-grid on; grid minor;
-title('baseband resistor noise');
-leg1=legend('R2','R3');
-xlabel('offset freq (Hz)');
-ylabel('uV RMS');
-set(leg1,'Interpreter','none');        
+	fignum=fignum+1;
+	Volts_to_uVolts=1e-6;
+	figure(fignum); semilogx(fmain_Hz,abs(Vnoise_R2)/Volts_to_uVolts,fmain_Hz,abs(Vnoise_R3)/Volts_to_uVolts) ;
+	grid on; grid minor;
+	title('baseband resistor noise');
+	leg1=legend('R2','R3');
+	xlabel('offset freq (Hz)');
+	ylabel('uV RMS');
+	set(leg1,'Interpreter','none');        
 end
-  if 1 %unhide...
- fignum=fignum+1;
- %Volts_to_uVolts=1e-6;
-figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
-grid on; grid minor;
-title('vco output resistor noise,PD noise');
-leg1=legend('R2','R3','Phase Detector');
-xlabel('offset freq (Hz)');
-ylabel('dBc/Hz');
-set(leg1,'Interpreter','none');        
+if 1 %unhide...
+	fignum=fignum+1;
+	%Volts_to_uVolts=1e-6;
+	figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
+	grid on; grid minor;
+	title('vco output resistor noise,PD noise');
+	leg1=legend('R2','R3','Phase Detector');
+	xlabel('offset freq (Hz)');
+	ylabel('dBc/Hz');
+	set(leg1,'Interpreter','none');        
 end
-   if 1 %unhide...
- fignum=fignum+1;
- %Volts_to_uVolts=1e-6;
-figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R)) ;
-grid on; grid minor;
-title('Totals');
-leg1=legend('Total no R','Total');
-xlabel('offset freq (Hz)');
-ylabel('dBc/Hz');
-set(leg1,'Interpreter','none');        
+if 1 %unhide...
+	fignum=fignum+1;
+	%Volts_to_uVolts=1e-6;
+	figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R)) ;
+	grid on; grid minor;
+	title('Totals');
+	leg1=legend('Total no R','Total');
+	xlabel('offset freq (Hz)');
+	ylabel('dBc/Hz');
+	set(leg1,'Interpreter','none');        
 end             
 
 %%file write (comment out if not wanted)
