@@ -209,4 +209,9 @@ ylabel('dBc/Hz');
 set(leg1,'Interpreter','none');        
 end             
 
+%%file write (comment out if not wanted)
+pn_struct.f=fmain_Hz;
+pn_struct.n=Ntot_w_R;
+pn_struct.name='default output from RFdude.com PLL worksheet';
+save('rfd_pll_out_default.mat','pn_struct');
 
