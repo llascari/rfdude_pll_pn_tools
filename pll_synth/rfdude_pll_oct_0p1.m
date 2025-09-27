@@ -28,6 +28,7 @@
 startuptest=exist('pll_inputs_s');
 if(startuptest==1)
 	disp('pll_inputs_s structure exists ');
+	pn_struct.pll_inputs_s=pll_inputs_s; %save inputs to result file for trackin
 	%% NOTE: this is a little clunky -- lets this matlab code run stand alone (parameters in the "else" below.. but also lets this get called after the inputs exist, allowing iteration on that file and not touching this one...  seems like a cleaner way than trying to make a function that passes everything in and out
 	fout_desired_Hz=pll_inputs_s.fout_desired_Hz;  % desired final output frequency (multiplier divider output
 	mult=pll_inputs_s.mult; %set to 1 for normal
