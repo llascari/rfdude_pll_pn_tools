@@ -10,10 +10,15 @@ pll_inputs_s.Kphi_A_cycle=1e-3;
 pll_inputs_s.BW_desired_Hz=2e3;
 pll_inputs_s.PM_desired_deg=55;
 pll_inputs_s.ATTEN_dB=0.01
-pll_inputs_s.F_tcxo_Hz=12.8e6;
+
+pll_inputs_s.F_tcxo_Hz=12.8e6;  %need this for file or params
+pll_inputs_s.bUseTCXOFromFile=0; %% if 1, load file below instead of params
+pll_inputs_s.FileTCXO="TCXO_ref_a.mat"; %uses standard pn_struct format    
 pll_inputs_s.Ntcxo_ref_dBc=-135;
 pll_inputs_s.Ftcxo_ref_offset_Hz=100;
 
+pll_inputs_s.bUseVCOFromFile=0; %% if 1, use file below, otherwise params
+pll_inputs_s.FileVCO="VCO_ref_a.mat"; %uses standard pn_struct format    
 pll_inputs_s.Nvco_ref_dBc=-115; %VCO open loop noise
 pll_inputs_s.Fvco_ref_offset_Hz=10e3; 
 pll_inputs_s.Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))

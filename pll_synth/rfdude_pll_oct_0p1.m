@@ -42,10 +42,14 @@ if(startuptest==1)
 	%also, usually this is of minimal value
 	%% Setup 
 	%some of this is just to match the old mathcad stuff, it isn't as relevant
+	
 	F_tcxo_Hz=pll_inputs_s.F_tcxo_Hz;
+	bUseTCXOFromFile=pll_inputs_s.bUseTCXOFromFile; %% if 1, load file below instead of params
+	FileTCXO=pll_inputs_s.FileTCXO; %uses standard pn_struct format  
 	Ntcxo_ref_dBc=pll_inputs_s.Ntcxo_ref_dBc; %phase noise reference point
 	Ftcxo_ref_offset_Hz=pll_inputs_s.Ftcxo_ref_offset_Hz;
-
+  	bUseVCOFromFile=pll_inputs_s.bUseVCOFromFile; %% if 1, use file below, otherwise params
+	FileVCO=pll_inputs_s.FileVCO; %uses standard pn_struct format    
 	Nvco_ref_dBc=pll_inputs_s.Nvco_ref_dBc; %VCO open loop noise
 	Fvco_ref_offset_Hz=pll_inputs_s.Fvco_ref_offset_Hz; 
 	Npd_ref_dBc=pll_inputs_s.Npd_ref_dBc; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
@@ -80,9 +84,12 @@ else
 	%% Setup 
 	%some of this is just to match the old mathcad stuff, it isn't as relevant
 	F_tcxo_Hz=12.8e6;
+       bUseTCXOFromFile=0; %% if 1, load file below instead of params
+	FileTCXO="TCXO_ref_a.mat"; %uses standard pn_struct format                                                                
 	Ntcxo_ref_dBc=-135; %phase noise reference point
 	Ftcxo_ref_offset_Hz=100;
-
+       	bUseVCOFromFile=0; %% if 1, use file below, otherwise params
+	FileVCO="VCO_ref_a.mat"; %uses standard pn_struct format  
 	Nvco_ref_dBc=-115; %VCO open loop noise
 	Fvco_ref_offset_Hz=10e3; 
 	Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
