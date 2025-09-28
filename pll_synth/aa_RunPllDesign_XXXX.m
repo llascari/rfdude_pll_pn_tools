@@ -41,7 +41,7 @@ pll_inputs_s.CC3=1e-12;
 pll_inputs_s.RR3=1;
 
 pll_inputs_s.bSaveFigs=1;
-
+pll_inputs_s.pn_ylimits=[-200,0];
 
 
 

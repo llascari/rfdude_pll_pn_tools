@@ -64,11 +64,12 @@ if(startuptest==1)
 	%the synthesis stuff in the analysis
 	CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
 	RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
-	
+
 	bSaveFigs=pll_inputs_s.bSaveFigs;
+	pn_ylimits=[-200,0];
 
 
-%%NOTE EDIT this chunk if you want to drive this file stand alone
+	%%NOTE EDIT this chunk if you want to drive this file stand alone
 else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
 	clc; clear; close all;
 	disp("pll_input_s structure doesn't exist, using inputs provided below");
@@ -108,11 +109,13 @@ else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
 	CC1=1e-12; CC2=1e-12; RR2=1; CC3=1e-12; RR3=1;
 
 	bSaveFigs=0;
+	pn_ylimits=[-200,0];
+
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-        [file_basename rem]=strtok(def_filename,'.'); %strip extension
-	FigSave_file_basename=file_basename;      
+[file_basename rem]=strtok(def_filename,'.'); %strip extension
+FigSave_file_basename=file_basename;      
 %
 %
 
@@ -227,6 +230,7 @@ xlabel('offset freq (Hz)');
 ylabel('ssb Noise (dBc/Hz)');
 set(leg1,'Interpreter','none');
 title('TCXO noise');
+ylim(pn_ylimits);
 
 
 
@@ -262,6 +266,8 @@ pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
 	semilogx(fmain_Hz,vco_n_interp,pn_struct_vco.f,pn_struct_vco.n);
 	title('VCO interp verification');
 
+	ylim(pn_ylimits);
+
 	Nvco=10.^(vco_n_interp./20);  %convert to voltage    
 
 else
@@ -278,11 +284,13 @@ leg1=legend('VCO','VCO shaped by loop');
 xlabel('offset freq (Hz)');
 ylabel('ssb Noise (dBc/Hz)');
 set(leg1,'Interpreter','none');       
-        if bSaveFigs==1
-      % print 
-       print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
-       print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
-    end	     
+ylim(pn_ylimits);
+
+if bSaveFigs==1
+	% print 
+	print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
+	print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
+end	     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%% See the PDF of the mathcad analysis for further explanation (www.RFdude.com)
 k=1.38e-23;  %Boltzmann's constant, joules/K 
@@ -328,7 +336,9 @@ if 0 %hide...
 	leg1=legend('R2','R3');
 	xlabel('offset freq (Hz)');
 	ylabel('uV RMS');
-	set(leg1,'Interpreter','none');        
+	set(leg1,'Interpreter','none'); 
+	ylim(pn_ylimits);
+
 end
 if 1 %unhide...
 	fignum=fignum+1;
@@ -340,11 +350,13 @@ if 1 %unhide...
 	xlabel('offset freq (Hz)');
 	ylabel('dBc/Hz');
 	set(leg1,'Interpreter','none');
-      if bSaveFigs==1
-      % print 
-       print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
-       print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
-    end	    
+	ylim(pn_ylimits);
+
+	if bSaveFigs==1
+		% print 
+		print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
+		print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
+	end	    
 end
 if 1 %unhide...
 	fignum=fignum+1;
@@ -355,13 +367,35 @@ if 1 %unhide...
 	leg1=legend('Total no R','Total');
 	xlabel('offset freq (Hz)');
 	ylabel('dBc/Hz');
+	set(leg1,'Interpreter','none');  
+	ylim(pn_ylimits);
+
+	if bSaveFigs==1
+		% print 
+		print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
+		print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
+	end	    
+end     
+
+%%NOTE: one with main contributors and total
+if 1 %unhide...
+	fignum=fignum+1;
+	figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Nvco_loop),fmain_Hz,20*log10(Ntcxo_loop),fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
+	grid on; grid minor;
+	title('Total, contributors');
+	leg1=legend('Total with Reistors','VCO','R2','R3','Phase detector');
+	xlabel('offset freq (Hz)');
+	ylabel('dBc/Hz');
 	set(leg1,'Interpreter','none');    
-    if bSaveFigs==1
-      % print 
-       print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
-       print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
-    end	    
-end             
+	axis tight;
+	ylim(pn_ylimits);
+
+	if bSaveFigs==1
+		% print 
+		print(fignum,strcat(FigSave_file_basename,'_contribs_total.pdf'));
+		print(fignum,strcat(FigSave_file_basename,'_contribs_total.jpg'));
+	end	    
+end        
 
 %%file write (comment out if not wanted)
 pn_struct.f=fmain_Hz;
