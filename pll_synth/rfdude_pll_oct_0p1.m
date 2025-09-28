@@ -68,6 +68,7 @@ if(startuptest==1)
 	bSaveFigs=pll_inputs_s.bSaveFigs;
 	pn_ylimits=[-200,0];
 
+	bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
 
 	%%NOTE EDIT this chunk if you want to drive this file stand alone
 else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
@@ -110,6 +111,7 @@ else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
 
 	bSaveFigs=0;
 	pn_ylimits=[-200,0];
+	bWriteCSVtable=1;
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 end
@@ -184,7 +186,7 @@ PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
 %% TCXO first
-if pll_inputs_s.bUseTCXOFromFile==1
+if bUseTCXOFromFile==1
 	disp("Using TCXO noise from File");
 	load(pll_inputs_s.FileTCXO);
 	pn_struct_tcxo=pn_struct;
@@ -235,7 +237,7 @@ ylim(pn_ylimits);
 
 
 %% VCO next, shaped differently
-if pll_inputs_s.bUseVCOFromFile==1
+if bUseVCOFromFile==1
 
 	disp("Using VCO noise from File");
 	load(pll_inputs_s.FileVCO);
@@ -397,9 +399,26 @@ if 1 %unhide...
 	end	    
 end        
 
+
+
 %%file write (comment out if not wanted)
+pn_struct.fc=fout_desired_Hz;
 pn_struct.f=fmain_Hz;
 pn_struct.n=20*log10(Ntot_w_R);
 pn_struct.name='default output from RFdude.com PLL worksheet';
 save(def_filename,'pn_struct');
+
+if bWriteCSVtable==1
+fid=fopen(strcat(file_basename,"_results.csv"),"w");
+fprintf(fid,"PLL analysis output report\r\n");
+fprintf(fid,"Fout=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
+fprintf(fid,"C1=%d C2=%d R2=%d R3=%d C3=%d\r\n",C1,C2,R2,R3,C3);
+
+
+	fprintf(fid,"Freq(Hz),Ntotal_with_resistors(dBc/Hz)\r\n");                                                              
+for ii=1:length(fmain_Hz)
+	fprintf(fid,"%d,%d\r\n",fmain_Hz(ii),20*log10(Ntot_w_R(ii)));                                                              
+end
+fclose(fid);
+end
 

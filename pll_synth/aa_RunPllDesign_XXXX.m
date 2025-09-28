@@ -42,7 +42,7 @@ pll_inputs_s.RR3=1;
 
 pll_inputs_s.bSaveFigs=1;
 pll_inputs_s.pn_ylimits=[-200,0];
-
+pll_inputs_s.bWriteCSVtable=1;
 
 
 rfdude_pll_oct_0p1
