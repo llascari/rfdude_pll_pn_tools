@@ -19,8 +19,8 @@ pll_inputs_s.FileTCXO="../pn/datfiles_local/vcso_1G.mat"; %uses standard pn_stru
 pll_inputs_s.Ntcxo_ref_dBc=-135;
 pll_inputs_s.Ftcxo_ref_offset_Hz=100;
 
-pll_inputs_s.bUseVCOFromFile=0; %% if 1, use file below, otherwise params
-pll_inputs_s.FileVCO="VCO_ref_a.mat"; %uses standard pn_struct format    
+pll_inputs_s.bUseVCOFromFile=1; %% if 1, use file below, otherwise params
+pll_inputs_s.FileVCO="../pn/datfiles_local/vcso_1G.mat"; %uses standard pn_struct format    
 pll_inputs_s.Nvco_ref_dBc=-115; %VCO open loop noise
 pll_inputs_s.Fvco_ref_offset_Hz=10e3; 
 pll_inputs_s.Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))

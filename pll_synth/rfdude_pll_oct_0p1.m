@@ -1,4 +1,5 @@
 %% rfdude_pll_oct_0p1.m
+%% USE AT YOUR OWN RISK
 %20250924 LL -- start translation 
 %%20250926 LL -- basic filter synthesis, all basic noise prediction (including resistor noise) working fine
 %TODO:write phase noise data structure out to .mat file
@@ -180,22 +181,19 @@ if pll_inputs_s.bUseTCXOFromFile==1
 	load(pll_inputs_s.FileTCXO);
 	pn_struct_tcxo=pn_struct;
 	clear pn_struct; % get rid of this to avoid conflicts later
-	disp("need to double check interpolation here (TCXO noise from file)");
+	
+	if fmain_Hz(1)<pn_struct_tcxo.f(1)       %%NOTE: check low end
+	disp("main freq sweep extends below input data range, extending lowest point");
+	pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
+	pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
 
-	%%NOTE: this will fail if the range of fmain_Hz isn't covered
-	%so we'll need to extrapolate here
-	%% extend endpoints if out of range
-	if(fmain_Hz(1)<pn_struct_tcxo.f(1))       %%NOTE: check low end
-		disp("main freq sweep extends below input data range, extending lowest point");
-		pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
-		pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
 	else
-		%do nothing
+	%do nothing
 	end
 	if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
-		disp("max freq sweep extends above input data range, extending highest point");
-		pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
-		pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
+	disp("max freq sweep extends above input data range, extending highest point");
+	pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
+	pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 	else
 		%do nothing
 	end        
@@ -204,8 +202,8 @@ if pll_inputs_s.bUseTCXOFromFile==1
 	tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
 	fignum=fignum+1;
 	figure(fignum);
-	semilogx(fmain_Hz,tcxo_n_interp);
-	%semilogx(fmain_Hz,tcxo_n_interp,pn_struct_tcxo.f,pn_struct_tcxo.n);
+	%semilogx(fmain_Hz,tcxo_n_interp);
+	semilogx(fmain_Hz,tcxo_n_interp,pn_struct_tcxo.f,pn_struct_tcxo.n);
 	title('TCXO interp verification');
 
 	Ntcxo=(N/R)*10.^(tcxo_n_interp./20);  %convert to voltage
@@ -224,8 +222,46 @@ xlabel('offset freq (Hz)');
 ylabel('ssb Noise (dBc/Hz)');
 set(leg1,'Interpreter','none');
 title('TCXO noise');
+
+
+
 %% VCO next, shaped differently
-Nvco=noise_basic(fmain_Hz,Fvco_ref_offset_Hz,Nvco_ref_dBc);
+if pll_inputs_s.bUseVCOFromFile==1
+	load(pll_inputs_s.FileVCO);
+	pn_struct_vco=pn_struct;     
+	clear pn_struct; %avoid conflict later
+        
+	if fmain_Hz(1)<pn_struct_vco.f(1)       %%NOTE: check low end
+	disp("main freq sweep extends below input data range, extending lowest point");
+	pn_struct_vco.f=[fmain_Hz(1) pn_struct_vco.f];
+	pn_struct_vco.n=[pn_struct_vco.n(1) pn_struct_vco.n];
+
+	else
+	%do nothing
+	end
+	if(fmain_Hz(end)>pn_struct_vco.f(end))        %%NOTE: check high end
+	disp("max freq sweep extends above input data range, extending highest point");
+	pn_struct_vco.f=[ pn_struct_vco.f fmain_Hz(end)];
+	pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
+	else
+		%do nothing
+	end        
+
+
+	vco_n_interp=interp1(log10(pn_struct_vco.f),pn_struct_vco.n,log10(fmain_Hz));
+	fignum=fignum+1;
+	figure(fignum);
+	%semilogx(fmain_Hz,tcxo_n_interp);
+	semilogx(fmain_Hz,vco_n_interp,pn_struct_vco.f,pn_struct_vco.n);
+	title('VCO interp verification');
+
+	Nvco=10.^(vco_n_interp./20);  %convert to voltage    
+
+else
+
+	Nvco=noise_basic(fmain_Hz,Fvco_ref_offset_Hz,Nvco_ref_dBc);
+end
+
 Nvco_loop=Nvco.*Gol_vcof;
 fignum=fignum+1;
 figure(fignum); semilogx(fmain_Hz,20*log10(abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
