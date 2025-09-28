@@ -28,7 +28,7 @@ pll_inputs_s.Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrad
 pll_inputs_s.def_filename='_rfd_pll_Design_XXXX.mat'; %default results file saved (phase noise)
 
 pll_inputs_s.fstart_main_Hz=10;
-pll_inputs_s.fstop_main_Hz=10e6;
+pll_inputs_s.fstop_main_Hz=200e6;
 pll_inputs_s.fsweep_main_pts=401; %100000; %3201;
 
 

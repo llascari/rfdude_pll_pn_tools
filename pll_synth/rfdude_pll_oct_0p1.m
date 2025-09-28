@@ -42,13 +42,13 @@ if(startuptest==1)
 	%also, usually this is of minimal value
 	%% Setup 
 	%some of this is just to match the old mathcad stuff, it isn't as relevant
-	
+
 	F_tcxo_Hz=pll_inputs_s.F_tcxo_Hz;
 	bUseTCXOFromFile=pll_inputs_s.bUseTCXOFromFile; %% if 1, load file below instead of params
 	FileTCXO=pll_inputs_s.FileTCXO; %uses standard pn_struct format  
 	Ntcxo_ref_dBc=pll_inputs_s.Ntcxo_ref_dBc; %phase noise reference point
 	Ftcxo_ref_offset_Hz=pll_inputs_s.Ftcxo_ref_offset_Hz;
-  	bUseVCOFromFile=pll_inputs_s.bUseVCOFromFile; %% if 1, use file below, otherwise params
+	bUseVCOFromFile=pll_inputs_s.bUseVCOFromFile; %% if 1, use file below, otherwise params
 	FileVCO=pll_inputs_s.FileVCO; %uses standard pn_struct format    
 	Nvco_ref_dBc=pll_inputs_s.Nvco_ref_dBc; %VCO open loop noise
 	Fvco_ref_offset_Hz=pll_inputs_s.Fvco_ref_offset_Hz; 
@@ -58,12 +58,12 @@ if(startuptest==1)
 	fstart_main_Hz=pll_inputs_s.fstart_main_Hz;
 	fstop_main_Hz=pll_inputs_s.fstop_main_Hz;
 	fsweep_main_pts=pll_inputs_s.fsweep_main_pts; %100000; %3201;
-         filter_override=pll_inputs_s.filter_override;
+	filter_override=pll_inputs_s.filter_override;
 	%% if filter override is set, these values will be substituted after
 	%the synthesis stuff in the analysis
-         CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
-	 RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
-                                                                     
+	CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
+	RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
+
 
 
 else
@@ -84,11 +84,11 @@ else
 	%% Setup 
 	%some of this is just to match the old mathcad stuff, it isn't as relevant
 	F_tcxo_Hz=12.8e6;
-       bUseTCXOFromFile=0; %% if 1, load file below instead of params
+	bUseTCXOFromFile=0; %% if 1, load file below instead of params
 	FileTCXO="TCXO_ref_a.mat"; %uses standard pn_struct format                                                                
 	Ntcxo_ref_dBc=-135; %phase noise reference point
 	Ftcxo_ref_offset_Hz=100;
-       	bUseVCOFromFile=0; %% if 1, use file below, otherwise params
+	bUseVCOFromFile=0; %% if 1, use file below, otherwise params
 	FileVCO="VCO_ref_a.mat"; %uses standard pn_struct format  
 	Nvco_ref_dBc=-115; %VCO open loop noise
 	Fvco_ref_offset_Hz=10e3; 
@@ -102,7 +102,7 @@ else
 	filter_override=0;
 	%% if filter override is set, these values will be substituted after
 	%the synthesis stuff in the analysis
-         CC1=1e-12; CC2=1e-12; RR2=1; CC3=1e-12; RR3=1;
+	CC1=1e-12; CC2=1e-12; RR2=1; CC3=1e-12; RR3=1;
 
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -151,7 +151,7 @@ F3rdpole=1/(2*pi*R3*C3)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Override section (remove redundant chars to override above %%%%%%%%%%%%%%%%%%%%%%%%%
 %The replacement values are above in the common settings groups
 if(filter_override==1)
-C1=CC1;  C2=CC2;  R2=RR2;  R3=RR3;  C3=CC3;
+	C1=CC1;  C2=CC2;  R2=RR2;  R3=RR3;  C3=CC3;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 H=1/N
@@ -180,11 +180,28 @@ if pll_inputs_s.bUseTCXOFromFile==1
 	load(pll_inputs_s.FileTCXO);
 	pn_struct_tcxo=pn_struct;
 	clear pn_struct; % get rid of this to avoid conflicts later
-       disp("need to double check interpolation here (TCXO noise from file)");
+	disp("need to double check interpolation here (TCXO noise from file)");
 
-      %%NOTE: this will fail if the range of fmain_Hz isn't covered
-      %so we'll need to extrapolate here
-        tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
+	%%NOTE: this will fail if the range of fmain_Hz isn't covered
+	%so we'll need to extrapolate here
+	%% extend endpoints if out of range
+	if(fmain_Hz(1)<pn_struct_tcxo.f(1))       %%NOTE: check low end
+		disp("main freq sweep extends below input data range, extending lowest point");
+		pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
+		pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
+	else
+		%do nothing
+	end
+	if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
+		disp("max freq sweep extends above input data range, extending highest point");
+		pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
+		pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
+	else
+		%do nothing
+	end        
+
+
+	tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
 	fignum=fignum+1;
 	figure(fignum);
 	semilogx(fmain_Hz,tcxo_n_interp);
@@ -192,9 +209,9 @@ if pll_inputs_s.bUseTCXOFromFile==1
 	title('TCXO interp verification');
 
 	Ntcxo=(N/R)*10.^(tcxo_n_interp./20);  %convert to voltage
-       % clear pn_struct_tcxo;
+	% clear pn_struct_tcxo;
 else
-Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
+	Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
 end
 
 Ntcxo_loop=Ntcxo.*Gcl;
