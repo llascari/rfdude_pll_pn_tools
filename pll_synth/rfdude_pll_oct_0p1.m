@@ -28,7 +28,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% system inputs %%%%%%%%%%%%%%%%%%%%%%%%%
 startuptest=exist('pll_inputs_s');
 if(startuptest==1)
-	disp('pll_inputs_s structure exists ');
+	disp('pll_inputs_s structure exists '); 
 	pn_struct.pll_inputs_s=pll_inputs_s; %save inputs to result file for trackin
 	%% NOTE: this is a little clunky -- lets this matlab code run stand alone (parameters in the "else" below.. but also lets this get called after the inputs exist, allowing iteration on that file and not touching this one...  seems like a cleaner way than trying to make a function that passes everything in and out
 	fout_desired_Hz=pll_inputs_s.fout_desired_Hz;  % desired final output frequency (multiplier divider output
@@ -64,10 +64,12 @@ if(startuptest==1)
 	%the synthesis stuff in the analysis
 	CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
 	RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
+	
+	bSaveFigs=pll_inputs_s.bSaveFigs;
 
 
-
-else
+%%NOTE EDIT this chunk if you want to drive this file stand alone
+else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
 	clc; clear; close all;
 	disp("pll_input_s structure doesn't exist, using inputs provided below");
 	fout_desired_Hz=445e6;  % desired final output frequency (multiplier divider output
@@ -105,10 +107,12 @@ else
 	%the synthesis stuff in the analysis
 	CC1=1e-12; CC2=1e-12; RR2=1; CC3=1e-12; RR3=1;
 
-
+	bSaveFigs=0;
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
+        [file_basename rem]=strtok(def_filename,'.'); %strip extension
+	FigSave_file_basename=file_basename;      
 %
 %
 
@@ -274,7 +278,11 @@ leg1=legend('VCO','VCO shaped by loop');
 xlabel('offset freq (Hz)');
 ylabel('ssb Noise (dBc/Hz)');
 set(leg1,'Interpreter','none');       
-
+        if bSaveFigs==1
+      % print 
+       print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
+       print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
+    end	     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%% See the PDF of the mathcad analysis for further explanation (www.RFdude.com)
 k=1.38e-23;  %Boltzmann's constant, joules/K 
@@ -331,7 +339,12 @@ if 1 %unhide...
 	leg1=legend('R2','R3','Phase Detector');
 	xlabel('offset freq (Hz)');
 	ylabel('dBc/Hz');
-	set(leg1,'Interpreter','none');        
+	set(leg1,'Interpreter','none');
+      if bSaveFigs==1
+      % print 
+       print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
+       print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
+    end	    
 end
 if 1 %unhide...
 	fignum=fignum+1;
@@ -342,7 +355,12 @@ if 1 %unhide...
 	leg1=legend('Total no R','Total');
 	xlabel('offset freq (Hz)');
 	ylabel('dBc/Hz');
-	set(leg1,'Interpreter','none');        
+	set(leg1,'Interpreter','none');    
+    if bSaveFigs==1
+      % print 
+       print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
+       print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
+    end	    
 end             
 
 %%file write (comment out if not wanted)

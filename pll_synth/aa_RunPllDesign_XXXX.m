@@ -40,6 +40,10 @@ pll_inputs_s.RR2=1;
 pll_inputs_s.CC3=1e-12;
 pll_inputs_s.RR3=1;
 
+pll_inputs_s.bSaveFigs=1;
+
+
+
 
 rfdude_pll_oct_0p1
 addpath("../pn")
