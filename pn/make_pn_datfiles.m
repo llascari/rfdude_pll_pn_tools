@@ -6,6 +6,7 @@
 %
 
 % device A
+pn_struct.fc=100e6; %center freq (dummy)
 pn_struct.f=  [1e3 2e3 5e3 1e4 2e4  5e4 1e5  2e5  5e5  1e6  1e7 1e8];
 pn_struct.n=[-60 -58 -68 -82 -93 -101 -109 -114 -124 -129 -149 -149];
 pn_struct.name='artificial device A';
@@ -14,6 +15,8 @@ clear;
 
 
 %%device B
+
+pn_struct.fc=100e6; %center freq (dummy)
 pn_struct.f=  [1e3 2e3 5e3 1e4 2e4  5e4 1e5  2e5  5e5  1e6  1e7 1e8];
 pn_struct.n=[  -95 -95 -95 -97 -97 -105 -117 -117 -124 -124 -145 -150];
 
@@ -27,6 +30,8 @@ clear;
 %lower offsets are made up
 %pn_struct.f=  [10 100 1e3   1e4  1e5  1e6  1e7 1e8];
 pn_struct.f=  [ 100 1e3   1e4  1e5  1e6  1e7 1e8];
+
+pn_struct.fc=1e9; %center freq ()
 %pn_struct.n=[ -65 -85 -105 -138 -150 -160 -170 -170];
 pn_struct.n=[  -85 -105 -138 -150 -160 -170 -170];
 pn_struct.name='VCSO data entered';
@@ -37,6 +42,8 @@ clear;
 % now obsolete device
 %LT6948-3, using 2377 MHz data data  %made up some of the endpoints
 %looks to be about 100k loop bw, with 61 MHz ref
+
+pn_struct.fc=2377e6; %center freq ()
 pn_struct.f=  [1e3   2e3  5e3  1e4  2e4  5e4  1e5  2e5  5e5  1e6  1e7 1e8];
 pn_struct.n=[  -111 -112 -112 -112 -111 -110 -109 -111 -120 -130 -145 -150];
 
@@ -46,6 +53,8 @@ clear;
 
 %LMX2592 at 3 GHz output using narrow loop %made up some of the endpoints
 %looks to be about 100k loop bw, with 61 MHz ref
+
+pn_struct.fc=3e9; %center freq ()
 pn_struct.f=  [1e3   2e3 5e3 1e4  2e4 5e4  1e5  2e5  5e5  1e6  1e7 1e8];
 pn_struct.n=[  -72  -70 -78 -90 -100 -112 -118 -125 -135 -140 -155 -155];
 

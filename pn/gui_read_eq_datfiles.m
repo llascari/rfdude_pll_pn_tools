@@ -42,7 +42,11 @@ else
 	disp('source flag not valid');
 end
    
+fc_cell=inputdlg("what's the center freq?","Fc input")
+fc=cell2mat(fc_cell);
+
 dataset_t=dataset';
+pn_struct.fc=str2num(fc); 
 pn_struct.f=dataset_t(1,:);
 pn_struct.n=dataset_t(2,:);
 pn_struct.comment='data imported from instrumentation';
