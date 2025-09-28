@@ -111,9 +111,8 @@ end
 
 %
 %
-%Phase detector transfer function
 
-%main freq range
+%main freq range /sweep setup
 fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
 
 fout_Hz=fout_desired_Hz*1/mult;   %VCO output frequency
@@ -122,6 +121,7 @@ fignum=0;
 %compensate phase margin request accounting for delay in phase detector
 PM_desired_adjusted_deg=PM_desired_deg-(180/pi)*angle(g_pd(BW_desired_Hz,Fref_Hz)) 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% analysis/synthesis
 wp=((2*pi))*BW_desired_Hz               %units= radians/sec
 tau1=((sec((pi/180)*PM_desired_adjusted_deg)-tan((pi/180)*PM_desired_adjusted_deg))/wp) %units seconds
@@ -178,22 +178,23 @@ PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
 %% TCXO first
 if pll_inputs_s.bUseTCXOFromFile==1
+	disp("Using TCXO noise from File");
 	load(pll_inputs_s.FileTCXO);
 	pn_struct_tcxo=pn_struct;
 	clear pn_struct; % get rid of this to avoid conflicts later
-	
+
 	if fmain_Hz(1)<pn_struct_tcxo.f(1)       %%NOTE: check low end
 	disp("main freq sweep extends below input data range, extending lowest point");
 	pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
 	pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
 
-	else
+else
 	%do nothing
-	end
-	if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
-	disp("max freq sweep extends above input data range, extending highest point");
-	pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
-	pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
+end
+if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
+disp("max freq sweep extends above input data range, extending highest point");
+pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
+pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 	else
 		%do nothing
 	end        
@@ -227,22 +228,24 @@ title('TCXO noise');
 
 %% VCO next, shaped differently
 if pll_inputs_s.bUseVCOFromFile==1
+
+	disp("Using VCO noise from File");
 	load(pll_inputs_s.FileVCO);
 	pn_struct_vco=pn_struct;     
 	clear pn_struct; %avoid conflict later
-        
+
 	if fmain_Hz(1)<pn_struct_vco.f(1)       %%NOTE: check low end
 	disp("main freq sweep extends below input data range, extending lowest point");
 	pn_struct_vco.f=[fmain_Hz(1) pn_struct_vco.f];
 	pn_struct_vco.n=[pn_struct_vco.n(1) pn_struct_vco.n];
 
-	else
+else
 	%do nothing
-	end
-	if(fmain_Hz(end)>pn_struct_vco.f(end))        %%NOTE: check high end
-	disp("max freq sweep extends above input data range, extending highest point");
-	pn_struct_vco.f=[ pn_struct_vco.f fmain_Hz(end)];
-	pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
+end
+if(fmain_Hz(end)>pn_struct_vco.f(end))        %%NOTE: check high end
+disp("max freq sweep extends above input data range, extending highest point");
+pn_struct_vco.f=[ pn_struct_vco.f fmain_Hz(end)];
+pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
 	else
 		%do nothing
 	end        
