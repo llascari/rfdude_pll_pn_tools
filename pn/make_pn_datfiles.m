@@ -26,7 +26,9 @@ clear;
 %CVSO-914-1000 (crystek)
 %lower offsets are made up
 pn_struct.f=  [10 100 1e3   1e4  1e5  1e6  1e7 1e8];
+%pn_struct.f=  [ 100 1e3   1e4  1e5  1e6  1e7 1e8];
 pn_struct.n=[ -65 -85 -105 -138 -150 -160 -170 -170];
+%pn_struct.n=[  -85 -105 -138 -150 -160 -170 -170];
 pn_struct.name='VCSO data entered';
 save('datfiles_local/vcso_1G.mat','pn_struct');
 clear;
