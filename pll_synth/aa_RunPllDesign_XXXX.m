@@ -11,9 +11,11 @@ pll_inputs_s.BW_desired_Hz=2e3;
 pll_inputs_s.PM_desired_deg=55;
 pll_inputs_s.ATTEN_dB=0.01
 
-pll_inputs_s.F_tcxo_Hz=12.8e6;  %need this for file or params
-pll_inputs_s.bUseTCXOFromFile=0; %% if 1, load file below instead of params
-pll_inputs_s.FileTCXO="TCXO_ref_a.mat"; %uses standard pn_struct format    
+%pll_inputs_s.F_tcxo_Hz=12.8e6;  %need this for file or params
+pll_inputs_s.F_tcxo_Hz=1e9;  %need this for file or params
+pll_inputs_s.bUseTCXOFromFile=1; %% if 1, load file below instead of params
+%pll_inputs_s.FileTCXO="TCXO_ref_a.mat"; %uses standard pn_struct format    
+pll_inputs_s.FileTCXO="../pn/datfiles_local/vcso_1G.mat"; %uses standard pn_struct format    
 pll_inputs_s.Ntcxo_ref_dBc=-135;
 pll_inputs_s.Ftcxo_ref_offset_Hz=100;
 

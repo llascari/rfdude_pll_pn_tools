@@ -176,8 +176,20 @@ PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
 %% TCXO first
+if pll_inputs_s.bUseTCXOFromFile==1
+	load(pll_inputs_s.FileTCXO);
+	pn_struct_tcxo=pn_struct;
+	clear pn_struct; % get rid of this to avoid conflicts later
+       disp("need to double check interpolation here (TCXO noise from file)");
+        tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
+	Ntcxo=(N/R)*10.^(tcxo_n_interp./20);  %convert to voltage
+	clear pn_s
+else
 Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
+end
+
 Ntcxo_loop=Ntcxo.*Gcl;
+
 fignum=fignum+1;
 figure(fignum); semilogx(fmain_Hz,20*log10(abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
 grid on; grid minor;
