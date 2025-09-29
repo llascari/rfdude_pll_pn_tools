@@ -400,7 +400,7 @@ if 1 %unhide...
 	figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Nvco_loop),fmain_Hz,20*log10(Ntcxo_loop),fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
 	grid on; grid minor;
 	title('Total, contributors');
-	leg1=legend('Total with Resistors','VCO','R2','R3','Phase detector');
+	leg1=legend('Total with Resistors','VCO','TCXO ref','R2','R3','Phase detector');
 	xlabel('offset freq (Hz)');
 	ylabel('dBc/Hz');
 	set(leg1,'Interpreter','none');    
