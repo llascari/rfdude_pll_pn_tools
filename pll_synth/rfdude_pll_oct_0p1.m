@@ -232,7 +232,7 @@ end
 Ntcxo_loop=mult*Ntcxo.*Gcl;
 
 fignum=fignum+1;
-figure(fignum); semilogx(fmain_Hz,20*log10(abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
+figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
 grid on; grid minor;
 leg1=legend('TCXO','TCXO shaped by loop');
 xlabel('offset freq (Hz)');
@@ -285,7 +285,7 @@ end
 
 Nvco_loop=mult*Nvco.*Gol_vcof;
 fignum=fignum+1;
-figure(fignum); semilogx(fmain_Hz,20*log10(abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
+figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
 grid on; grid minor;
 title('VCO noise');
 leg1=legend('VCO','VCO shaped by loop');
