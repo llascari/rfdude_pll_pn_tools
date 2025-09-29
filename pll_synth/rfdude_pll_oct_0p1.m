@@ -311,6 +311,7 @@ Vn_R3=rnoise(R3,Temp);       %volts   in 1 Hz bw:w
 Vn_R2=rnoise(R2,Temp);       %volts   in 1 Hz bw:w
 
 %% there are several functions/vectors to compute, so do another loop
+%NOTE: the multiplier factor (mult) will be applied to individual noise contributors along the way, so these intermediate results will be at the output frequency (equivalent)
 for ii=1:length(fmain_Hz)
 	%%R2 noise analysis
 	Zr2_1(ii)=R2+(1/(2*pi*fmain_Hz(ii)*1i*C2)); %R2 in series with C2
