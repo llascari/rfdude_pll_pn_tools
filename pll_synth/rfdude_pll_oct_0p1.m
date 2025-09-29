@@ -66,6 +66,8 @@ if(startuptest==1)
 	RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
 
 	bSaveFigs=pll_inputs_s.bSaveFigs;
+	bSaveFigsPDF=pll_inputs_s.bSaveFigsPDF;
+	bSaveFigsJPG=pll_inputs_s.bSaveFigsJPG;
 	pn_ylimits=[-200,0];
 
 	bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
@@ -110,6 +112,9 @@ else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
 	CC1=1e-12; CC2=1e-12; RR2=1; CC3=1e-12; RR3=1;
 
 	bSaveFigs=0;
+	bSaveFigsPDF=0; %pll_inputs_s.bSaveFigsPDF;
+	bSaveFigsJPG=0; %pll_inputs_s.bSaveFigsJPG;
+
 	pn_ylimits=[-200,0];
 	bWriteCSVtable=1;
 
@@ -290,8 +295,12 @@ ylim(pn_ylimits);
 
 if bSaveFigs==1
 	% print 
-	print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
-	print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
+	if bSaveFigsPDF
+		print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
+	end
+	if bSaveFigsJPG
+		print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
+	end
 end	     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%% See the PDF of the mathcad analysis for further explanation (www.RFdude.com)
@@ -356,8 +365,12 @@ if 1 %unhide...
 
 	if bSaveFigs==1
 		% print 
-		print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
-		print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
+		if bSaveFigsPDF
+			print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
+		end
+		if bSaveFigsJPG
+			print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
+		end
 	end	    
 end
 if 1 %unhide...
@@ -374,8 +387,12 @@ if 1 %unhide...
 
 	if bSaveFigs==1
 		% print 
-		print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
-		print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
+		if bSaveFigsPDF
+			print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
+		end
+		if bSaveFigsJPG
+			print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
+		end
 	end	    
 end     
 
@@ -394,8 +411,12 @@ if 1 %unhide...
 
 	if bSaveFigs==1
 		% print 
-		print(fignum,strcat(FigSave_file_basename,'_contribs_total.pdf'));
-		print(fignum,strcat(FigSave_file_basename,'_contribs_total.jpg'));
+		if bSaveFigsPDF
+			print(fignum,strcat(FigSave_file_basename,'_contribs_total.pdf'));
+		end
+		if bSaveFigsJPG
+			print(fignum,strcat(FigSave_file_basename,'_contribs_total.jpg')); 
+		end
 	end	    
 end        
 
@@ -409,16 +430,16 @@ pn_struct.name='default output from RFdude.com PLL worksheet';
 save(def_filename,'pn_struct');
 
 if bWriteCSVtable==1
-fid=fopen(strcat(file_basename,"_results.csv"),"w");
-fprintf(fid,"PLL analysis output report\r\n");
-fprintf(fid,"Fout=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
-fprintf(fid,"C1=%d C2=%d R2=%d R3=%d C3=%d\r\n",C1,C2,R2,R3,C3);
+	fid=fopen(strcat(file_basename,"_results.csv"),"w");
+	fprintf(fid,"PLL analysis output report\r\n");
+	fprintf(fid,"Fout=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
+	fprintf(fid,"C1=%d C2=%d R2=%d R3=%d C3=%d\r\n",C1,C2,R2,R3,C3);
 
 
 	fprintf(fid,"Freq(Hz),Ntotal_with_resistors(dBc/Hz)\r\n");                                                              
-for ii=1:length(fmain_Hz)
-	fprintf(fid,"%d,%d\r\n",fmain_Hz(ii),20*log10(Ntot_w_R(ii)));                                                              
-end
-fclose(fid);
+	for ii=1:length(fmain_Hz)
+		fprintf(fid,"%d,%d\r\n",fmain_Hz(ii),20*log10(Ntot_w_R(ii)));                                                              
+	end
+	fclose(fid);
 end
 
