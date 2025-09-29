@@ -40,8 +40,8 @@ pll_inputs_s.RR2=1;
 pll_inputs_s.CC3=1e-12;
 pll_inputs_s.RR3=1;
 
-pll_inputs_s.bSaveFigs=0;
-pll_inputs_s.bSaveFigsPDF=0;
+pll_inputs_s.bSaveFigs=1; %% this one needs to be enabled before the next two are evaluated
+pll_inputs_s.bSaveFigsPDF=1;
 pll_inputs_s.bSaveFigsJPG=0;
 pll_inputs_s.pn_ylimits=[-200,0];
 pll_inputs_s.bWriteCSVtable=1;
