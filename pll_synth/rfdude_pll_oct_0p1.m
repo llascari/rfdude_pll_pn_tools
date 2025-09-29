@@ -229,7 +229,7 @@ else
 	Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
 end
 
-Ntcxo_loop=Ntcxo.*Gcl;
+Ntcxo_loop=mult*Ntcxo.*Gcl;
 
 fignum=fignum+1;
 figure(fignum); semilogx(fmain_Hz,20*log10(abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
@@ -283,7 +283,7 @@ else
 	Nvco=noise_basic(fmain_Hz,Fvco_ref_offset_Hz,Nvco_ref_dBc);
 end
 
-Nvco_loop=Nvco.*Gol_vcof;
+Nvco_loop=mult*Nvco.*Gol_vcof;
 fignum=fignum+1;
 figure(fignum); semilogx(fmain_Hz,20*log10(abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
 grid on; grid minor;
@@ -329,13 +329,13 @@ for ii=1:length(fmain_Hz)
 	%%Modulation indices of resistor noise
 	mR2(ii)=(sqrt(2)*Vnoise_R2(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
 	mR3(ii)=(sqrt(2)*Vnoise_R3(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
-	N_out_R2(ii)=(mR2(ii)/2) *abs((1/(1+Gol(ii))));
-	N_out_R3(ii)=(mR3(ii)/2) *abs((1/(1+Gol(ii))));
+	N_out_R2(ii)=mult*(mR2(ii)/2) *abs((1/(1+Gol(ii))));
+	N_out_R3(ii)=mult*(mR3(ii)/2) *abs((1/(1+Gol(ii))));
 
 	N_pd(ii)=mult*(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
 
-	Ntot_no_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
-	Ntot_w_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
+	Ntot_no_R(ii)=(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
+	Ntot_w_R(ii)=(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
 	%sqrt((abs(N_out_R2(ii)))^2 sqrt((abs(N_out_R3(ii)))^2
 end
 
