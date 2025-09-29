@@ -332,7 +332,7 @@ for ii=1:length(fmain_Hz)
 	N_out_R2(ii)=(mR2(ii)/2) *abs((1/(1+Gol(ii))));
 	N_out_R3(ii)=(mR3(ii)/2) *abs((1/(1+Gol(ii))));
 
-	N_pd(ii)=(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
+	N_pd(ii)=mult*(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
 
 	Ntot_no_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
 	Ntot_w_R(ii)=mult*(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
