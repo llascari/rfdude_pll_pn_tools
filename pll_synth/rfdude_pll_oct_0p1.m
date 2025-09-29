@@ -372,8 +372,8 @@ if 1 %unhide...
 		if bSaveFigsJPG
 			print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
 		end
-	end	          /mult   %VCO output frequency
-Fvco=fout_Hz  %to make it 
+	end	          
+     	%VCO output frequency
 end
 if 1 %unhide...
 	fignum=fignum+1;
@@ -436,8 +436,6 @@ if bWriteCSVtable==1
 	fprintf(fid,"PLL analysis output report\r\n");
 	fprintf(fid,"Fout=%d mult=%d Fvco=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,mult,Fvco,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
 	fprintf(fid,"C1=%d C2=%d R2=%d R3=%d C3=%d\r\n",C1,C2,R2,R3,C3);
-                 /mult   %VCO output frequency
-Fvco=fout_Hz  %to make it 
 
 	fprintf(fid,"Freq(Hz),Ntotal_with_resistors(dBc/Hz)\r\n");                                                              
 	for ii=1:length(fmain_Hz)
