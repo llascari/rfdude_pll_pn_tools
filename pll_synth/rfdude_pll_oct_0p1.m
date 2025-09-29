@@ -198,17 +198,17 @@ if bUseTCXOFromFile==1
 	clear pn_struct; % get rid of this to avoid conflicts later
 
 	if fmain_Hz(1)<pn_struct_tcxo.f(1)       %%NOTE: check low end
-	disp("main freq sweep extends below input data range, extending lowest point");
-	pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
-	pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
+		disp("main freq sweep extends below input data range, extending lowest point");
+		pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
+		pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
 
-else
-	%do nothing
-end
-if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
-disp("max freq sweep extends above input data range, extending highest point");
-pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
-pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
+	else
+		%do nothing
+	end
+	if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
+		disp("max freq sweep extends above input data range, extending highest point");
+		pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
+		pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 	else
 		%do nothing
 	end        
@@ -250,17 +250,17 @@ if bUseVCOFromFile==1
 	clear pn_struct; %avoid conflict later
 
 	if fmain_Hz(1)<pn_struct_vco.f(1)       %%NOTE: check low end
-	disp("main freq sweep extends below input data range, extending lowest point");
-	pn_struct_vco.f=[fmain_Hz(1) pn_struct_vco.f];
-	pn_struct_vco.n=[pn_struct_vco.n(1) pn_struct_vco.n];
+		disp("main freq sweep extends below input data range, extending lowest point");
+		pn_struct_vco.f=[fmain_Hz(1) pn_struct_vco.f];
+		pn_struct_vco.n=[pn_struct_vco.n(1) pn_struct_vco.n];
 
-else
-	%do nothing
-end
-if(fmain_Hz(end)>pn_struct_vco.f(end))        %%NOTE: check high end
-disp("max freq sweep extends above input data range, extending highest point");
-pn_struct_vco.f=[ pn_struct_vco.f fmain_Hz(end)];
-pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
+	else
+		%do nothing
+	end
+	if(fmain_Hz(end)>pn_struct_vco.f(end))        %%NOTE: check high end
+		disp("max freq sweep extends above input data range, extending highest point");
+		pn_struct_vco.f=[ pn_struct_vco.f fmain_Hz(end)];
+		pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
 	else
 		%do nothing
 	end        
@@ -402,7 +402,7 @@ if 1 %unhide...
 	figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Nvco_loop),fmain_Hz,20*log10(Ntcxo_loop),fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
 	grid on; grid minor;
 	title('Total, contributors');
-	leg1=legend('Total with Reistors','VCO','R2','R3','Phase detector');
+	leg1=legend('Total with Resistors','VCO','R2','R3','Phase detector');
 	xlabel('offset freq (Hz)');
 	ylabel('dBc/Hz');
 	set(leg1,'Interpreter','none');    
