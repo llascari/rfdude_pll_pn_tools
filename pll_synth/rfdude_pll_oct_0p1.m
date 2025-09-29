@@ -129,7 +129,8 @@ FigSave_file_basename=file_basename;
 %main freq range /sweep setup
 fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
 
-fout_Hz=fout_desired_Hz*1/mult;   %VCO output frequency
+fout_desired_Hz
+fout_Hz=fout_desired_Hz*1/mult   %VCO output frequency
 fignum=0;
 %%%%%%%%%%
 %compensate phase margin request accounting for delay in phase detector
