@@ -131,6 +131,7 @@ fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);
 
 fout_desired_Hz
 fout_Hz=fout_desired_Hz*1/mult   %VCO output frequency
+Fvco=fout_Hz  %to make it clear
 fignum=0;
 %%%%%%%%%%
 %compensate phase margin request accounting for delay in phase detector
@@ -431,7 +432,7 @@ save(def_filename,'pn_struct');
 if bWriteCSVtable==1
 	fid=fopen(strcat(file_basename,"_results.csv"),"w");
 	fprintf(fid,"PLL analysis output report\r\n");
-	fprintf(fid,"Fout=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
+	fprintf(fid,"Fout=%d mult=%d Fvco=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,mult,Fvco,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
 	fprintf(fid,"C1=%d C2=%d R2=%d R3=%d C3=%d\r\n",C1,C2,R2,R3,C3);
 
 
