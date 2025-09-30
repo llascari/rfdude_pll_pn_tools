@@ -156,7 +156,7 @@ tau2=1/((wc^2)*(tau1+tau3))              %units seconds
 %N=fout_desired_Hz/Fref_Hz
 N=fout_Hz/Fref_Hz    %actual VCO freq
 R=F_tcxo_Hz/Fref_Hz
-
+disp("Synthesized values");
 C1=((Kphi_A_cycle*Kvco_Hz_volt*tau1)/(((wc^2)*N*tau2)))*sqrt((1+(wc^2 * tau2^2))/(((1+(wc^2 *tau1^2)*(1+(wc^2 * tau3^2))))))    %units Farads
 
 C2=C1*((tau2/tau1)-1)    %units Farads
@@ -170,6 +170,12 @@ F3rdpole=1/(2*pi*R3*C3)
 %The replacement values are above in the common settings groups
 if(filter_override==1)
 	C1=CC1;  C2=CC2;  R2=RR2;  R3=RR3;  C3=CC3;
+	disp("overrides");
+	C1
+	C2
+	R2
+	R3
+	C3
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 H=1/N
