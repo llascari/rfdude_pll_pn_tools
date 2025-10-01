@@ -10,8 +10,12 @@
 
 %save('datfiles_local/device_a.mat','pn_struct');
 clear;
-
-
+%different instruments have offsets.  need to figure out how to 
+%automatically parse
+%NOTE: UGLY!
+startline_pxa1=54
+startline_pxa2=62
+startline_e5052b=2;
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
 file_input=csvread(strcat(fpath,fname));
@@ -20,7 +24,7 @@ file_input=csvread(strcat(fpath,fname));
 
 %TODO -- come up with auto detect file type someday
 %last entry is the default selected.  if that's not entered, it defauts to yes/no, which is dumb.
-btn=questdlg('which instrument?','Instrument','pxa','e5052b','e5052b') ;
+btn=questdlg('which instrument?','Instrument','pxa1','pxa2','e5052b','e5052b') ;
 %btn
 
 %%TODO hack until I can figure out a better plan
@@ -28,16 +32,21 @@ btn=questdlg('which instrument?','Instrument','pxa','e5052b','e5052b') ;
 %source_flag='pxa';
 %source_flag=1;  %PXA
 
-if (strcmp(btn,'pxa')       )
+if (strcmp(btn,'pxa1')       )
 	source_flag=1;
+elseif (strcmp(btn,'pxa2'))
+	source_flag=3;
 elseif (strcmp(btn,'e5052b') )
 source_flag=2; %E5052b
 end
 
 if (source_flag==1)        %PXA
-	dataset=file_input(54:end,1:2); %% first two columns from entry 54 on (empirical)
+	dataset=file_input(startline_pxa1:end,1:2); %% first two columns from entry 54 on (empirical)
+elseif (source_flag==3)
+
+	dataset=file_input(startline_pxa2:end,1:2); %% first two columns from entry 54 on (empirical)
 elseif (source_flag==2)        %E5052b
-	dataset=file_input(2:end,1:2); %% only one column header here
+	dataset=file_input(startline_e5052b:end,1:2); %% only one column header here
 else
 	disp('source flag not valid');
 end
