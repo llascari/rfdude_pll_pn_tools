@@ -20,9 +20,6 @@ clear;
 %different instruments have offsets.  need to figure out how to 
 %automatically parse
 %NOTE: UGLY!
-startline_pxa1=54
-startline_pxa2=62
-startline_e5052b=2;
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
 file_input_numeric=csvread(strcat(fpath,fname));
@@ -67,7 +64,7 @@ ii=ii+1;
 
 
 end
-
+fclose(fid);
 
 %%now parse 
 dataset=file_input_numeric(startline:end,1:2);
