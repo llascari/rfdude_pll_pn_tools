@@ -25,7 +25,11 @@ startline_pxa2=62
 startline_e5052b=2;
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
-file_input=csvread(strcat(fpath,fname));
+file_input_numeric=csvread(strcat(fpath,fname));
+fid=fopen(strcat(fpath,fname));
+
+
+%file_input_text=importdata(strcat(fpath,fname),",");
 
 [file_basename rem ]=strtok(fname,'.'); %strip off extension
 
@@ -38,6 +42,30 @@ file_input=csvread(strcat(fpath,fname));
 %
 %source_flag='pxa';
 %source_flag=1;  %PXA
+
+searchdone=0;
+ii=1;
+while (searchdone==0)
+%while (ii<10)
+           str_tmp=fgets(fid)
+	   if(startsWith(str_tmp,"Offset")) %E5052b case
+		ii
+		disp("E5052b data detected")
+		searchdone=1;
+	elseif (startsWith(str_tmp,"DATA"))  %PXA
+		ii
+		disp("PXA data detected")
+		searchdone=1;
+	end
+		%[val,count,err]=fscanf(fid,"%s")
+	%stringin=file_input_numeric(ii,1)
+
+	%switch(
+ii=ii+1;
+
+
+end
+
 
 if (strcmp(btn,'pxa1')       )
 	source_flag=1;
