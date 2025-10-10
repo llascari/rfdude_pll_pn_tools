@@ -50,10 +50,12 @@ while (searchdone==0)
            str_tmp=fgets(fid)
 	   if(startsWith(str_tmp,"Offset")) %E5052b case
 		ii
+		startline=ii+1
 		disp("E5052b data detected")
 		searchdone=1;
 	elseif (startsWith(str_tmp,"DATA"))  %PXA
 		ii
+		startline=ii+1
 		disp("PXA data detected")
 		searchdone=1;
 	end
@@ -67,30 +69,16 @@ ii=ii+1;
 end
 
 
-if (strcmp(btn,'pxa1')       )
-	source_flag=1;
-elseif (strcmp(btn,'pxa2'))
-	source_flag=3;
-elseif (strcmp(btn,'e5052b') )
-source_flag=2; %E5052b
-end
-
-if (source_flag==1)        %PXA
-	dataset=file_input(startline_pxa1:end,1:2); %% first two columns from entry 54 on (empirical)
-elseif (source_flag==3)
-
-	dataset=file_input(startline_pxa2:end,1:2); %% first two columns from entry 54 on (empirical)
-elseif (source_flag==2)        %E5052b
-	dataset=file_input(startline_e5052b:end,1:2); %% only one column header here
-else
-	disp('source flag not valid');
-end
+%%now parse 
+dataset=file_input_numeric(startline:end,1:2);
    
 fc_cell=inputdlg("what's the center freq?","Fc input")
 fc=cell2mat(fc_cell);
-
+Kv_cell=inputdlg("if this is tunable, what is Kvco (Hz/Volt)?","Kvco input")
+Kvco=cell2mat(Kv_cell);      
 dataset_t=dataset';
 pn_struct.fc=str2num(fc);  %% new parameter to start using
+pn_struct.kvco=str2num(Kvco); %placeholder if not entered
 pn_struct.f=dataset_t(1,:);
 pn_struct.n=dataset_t(2,:);
 pn_struct.comment='data imported from instrumentation';
