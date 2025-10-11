@@ -20,9 +20,17 @@ clear;
 %different instruments have offsets.  need to figure out how to 
 %automatically parse
 %NOTE: UGLY!
+%
+%
+isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;  %%detect if octave or matlab
+
 [fname,fpath,fltidx]=uigetfile("*.csv");
 
+if isOctave
 file_input_numeric=csvread(strcat(fpath,fname));
+else
+file_input_numeric=readmatrix(strcat(fpath,fname)); % Matlab attempt 1
+end
 fid=fopen(strcat(fpath,fname));
 
 
