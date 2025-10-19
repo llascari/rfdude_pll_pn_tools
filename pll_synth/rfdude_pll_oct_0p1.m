@@ -60,6 +60,7 @@ if(startuptest==1)
 	fstop_main_Hz=pll_inputs_s.fstop_main_Hz;
 	fsweep_main_pts=pll_inputs_s.fsweep_main_pts; %100000; %3201;
 	filter_override=pll_inputs_s.filter_override;
+	filter_override_3rdpole_only=pll_inputs_s.filter_override_3rdpole_only;
 	%% if filter override is set, these values will be substituted after
 	%the synthesis stuff in the analysis
 	CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
@@ -168,6 +169,15 @@ F3rdpole=1/(2*pi*R3*C3)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Override section (remove redundant chars to override above %%%%%%%%%%%%%%%%%%%%%%%%%
 %The replacement values are above in the common settings groups
+if(filter_override_3rdpole_only==1)
+disp('3rd pole filter override only')
+	R3=RR3; C3=CC3;
+	disp('these as calculated');
+	C1
+	C2
+	R2
+end
+
 if(filter_override==1)
 	C1=CC1;  C2=CC2;  R2=RR2;  R3=RR3;  C3=CC3;
 	disp("overrides");
@@ -177,6 +187,7 @@ if(filter_override==1)
 	R3
 	C3
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 H=1/N
 for ii=1:length(fmain_Hz)

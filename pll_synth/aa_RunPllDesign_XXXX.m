@@ -37,6 +37,8 @@ pll_inputs_s.fsweep_main_pts=401; %100000; %3201;
 
 
 pll_inputs_s.filter_override=0;
+pll_inputs_s.filter_override_3rdpole_only=1;
+
 pll_inputs_s.CC1=1e-12;
 pll_inputs_s.CC2=1e-12;
 pll_inputs_s.RR2=1;
