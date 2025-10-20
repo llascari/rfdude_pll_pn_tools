@@ -6,6 +6,7 @@
 %Copyright 2025 Lance Lascari / RFdude.com LLC
 %
 
+ii=1;
 % device A
 f= [1e3 2e3 5e3 1e4 2e4  5e4 1e5  2e5  5e5  1e6  1e7 1e8];  
 n=[-60 -58 -68 -82 -93 -101 -109 -114 -124 -129 -149 -149];  
@@ -16,7 +17,10 @@ pn_struct=build_pn_struct(100e6,0,f,n,'comment device A','DeviceA');
 %pn_struct.n=[-60 -58 -68 -82 -93 -101 -109 -114 -124 -129 -149 -149];
 %pn_struct.name='artificial device A';
 save('datfiles_local/device_a.mat','pn_struct');
-clear;
+
+ar_pn_struct(ii)=pn_struct;
+ii=ii+1;
+clear pn_struct f n;
 
 
 %%device B
@@ -27,7 +31,10 @@ n=[  -95 -95 -95 -97 -97 -105 -117 -117 -124 -124 -145 -150];
 kvco=0;
 pn_struct=build_pn_struct(fc,kvco,f,n,'comment device B','artificial device B');
 save('datfiles_local/device_b.mat','pn_struct');
-clear;
+ar_pn_struct(ii)=pn_struct;
+ii=ii+1;
+clear pn_struct f n;
+                             ;
 
 
 %%a reference device
@@ -41,9 +48,11 @@ n=[  -85 -105 -138 -150 -160 -170 -170];
 name='VCSO data entered';
 
 pn_struct=build_pn_struct(fc,kvco,f,n,'entered data',name);
-save('datfiles_local/vcso_1G.mat','pn_struct');
-clear;
 
+save('datfiles_local/vcso_1G.mat','pn_struct');
+ar_pn_struct(ii)=pn_struct;
+ii=ii+1;
+clear pn_struct f n name;  
 
 % now obsolete device
 %LT6948-3, using 2377 MHz data data  %made up some of the endpoints
@@ -58,7 +67,9 @@ name='ltc synth';
 
 pn_struct=build_pn_struct(fc,kvco,f,n,comment,name);
 save('datfiles_local/ltc_synth.mat','pn_struct');
-clear;
+ar_pn_struct(ii)=pn_struct;
+ii=ii+1;
+clear pn_struct f n name comment;
 
 %LMX2592 at 3 GHz output using narrow loop %made up some of the endpoints
 %looks to be about 100k loop bw, with 61 MHz ref
@@ -72,6 +83,7 @@ name='TI LMX2592 at 3 GHz';
 
 pn_struct=build_pn_struct(fc,kvco,f,n,comment,name);
 save('datfiles_local/TI_synth.mat','pn_struct');
-clear;
-
-
+ar_pn_struct(ii)=pn_struct;
+ii=ii+1;
+clear pn_struct f n name comment;  
+save('datfiles_local/pn_array_test.mat','ar_pn_struct');    
