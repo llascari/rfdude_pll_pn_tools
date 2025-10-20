@@ -87,3 +87,4 @@ ar_pn_struct(ii)=pn_struct;
 ii=ii+1;
 clear pn_struct f n name comment;  
 save('datfiles_local/pn_array_test.mat','ar_pn_struct');    
+
