@@ -1,5 +1,9 @@
 % aa_RunPLLDesign_XXXX.m -- individual settings and
 % invocation of the PLL analysis  %% 
+%20251021LL -- at this point I've eliminated the stand alone call of the 
+%pll analysis; it always needs to be called with the inputs setup like this file does -- just too much clunky/messy overhead to handle both cases.
+%
+%
 %Copyright 2025 Lance Lascari / RFdude.com LLC       %
 clc; close all; clear;
 pll_inputs_s.fout_desired_Hz=445e6;

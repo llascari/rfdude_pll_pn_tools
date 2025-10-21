@@ -1,5 +1,6 @@
 %% rfdude_pll_oct_0p1.m
 %% USE AT YOUR OWN RISK
+%20251021 LL -- removed the stand alone version; too messy -- always need to call this with the input structure loaded
 %20250924 LL -- start translation 
 %%20250926 LL -- basic filter synthesis, all basic noise prediction (including resistor noise) working fine
 %TODO:write phase noise data structure out to .mat file
@@ -75,51 +76,10 @@ if(startuptest==1)
 
 	%%NOTE EDIT this chunk if you want to drive this file stand alone
 else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
-	clc; clear; close all;
-	disp("pll_input_s structure doesn't exist, using inputs provided below");
-	fout_desired_Hz=445e6;  % desired final output frequency (multiplier divider output
-	mult=1; %set to 1 for normal
-	Fref_Hz=100e3; %reference/phase detector frequency (PFD freq)
-	Kvco_Hz_volt=20*(1e6/1);  %tuning sensitivity of the VCO in Hz/volt
-	Kphi_A_cycle=1e-3; %amps/cycle
+	warning("pll_input_s structure /inputs missing");
+	return;
+	%exit;
 
-	BW_desired_Hz=2e3; %desired loop bandwidth
-	PM_desired_deg=55; %Phase margin "phi_sub_p" in original
-	ATTEN_dB=0.01; %additional attenuation requested by the 3rd pole in the filter (don't ask for too much)
-	%also, usually this is of minimal value
-
-
-	%% Setup 
-	%some of this is just to match the old mathcad stuff, it isn't as relevant
-	F_tcxo_Hz=12.8e6;
-	bUseTCXOFromFile=0; %% if 1, load file below instead of params
-	FileTCXO="TCXO_ref_a.mat"; %uses standard pn_struct format                                                                
-	Ntcxo_ref_dBc=-135; %phase noise reference point
-	Ftcxo_ref_offset_Hz=100;
-	bUseVCOFromFile=0; %% if 1, use file below, otherwise params
-	FileVCO="VCO_ref_a.mat"; %uses standard pn_struct format  
-	Nvco_ref_dBc=-115; %VCO open loop noise
-	Fvco_ref_offset_Hz=10e3; 
-	Npd_ref_dBc=-201; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
-
-	def_filename='_rfd_pll_out_default.mat'; %default results file saved (phase noise)
-	fstart_main_Hz=10;
-	fstop_main_Hz=10e6;
-	fsweep_main_pts=401; %100000; %3201;
-
-	filter_override=0;
-	%% if filter override is set, these values will be substituted after
-	%the synthesis stuff in the analysis
-	CC1=1e-12; CC2=1e-12; RR2=1; CC3=1e-12; RR3=1;
-
-	bSaveFigs=0;
-	bSaveFigsPDF=0; %pll_inputs_s.bSaveFigsPDF;
-	bSaveFigsJPG=0; %pll_inputs_s.bSaveFigsJPG;
-
-	pn_ylimits=[-200,0];
-	bWriteCSVtable=1;
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
 [file_basename rem]=strtok(def_filename,'.'); %strip extension
@@ -210,6 +170,7 @@ PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
+%%NOTE: Assume TCXO = reference into PLL
 %% TCXO first
 if bUseTCXOFromFile==1
 	disp("Using TCXO noise from File");
@@ -231,6 +192,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 	else
 		%do nothing
 	end        
+
 
 
 	tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
