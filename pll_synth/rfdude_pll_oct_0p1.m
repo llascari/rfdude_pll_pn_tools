@@ -44,16 +44,8 @@ if(startuptest==1)
 	fout_desired_Hz
 	fout_Hz=fout_desired_Hz*(1/mult)   %VCO output frequency
 	Fvco=fout_Hz  %to make it clear                                    
-	%N=fout_desired_Hz/Fref_Hz
-
-
-
-
-
-
-
+	
 	bUseVCOFromFile=pll_inputs_s.bUseVCOFromFile; %% if 1, use file below, otherwise params
-
 	FileVCO=pll_inputs_s.FileVCO; %uses standard pn_struct format    
 	%% will be used for noise later, mostly
 	%% VCO next, shaped differently
