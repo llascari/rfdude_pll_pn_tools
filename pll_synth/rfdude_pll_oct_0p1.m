@@ -37,9 +37,20 @@ if(startuptest==1)
 	fstop_main_Hz=pll_inputs_s.fstop_main_Hz;
 	fsweep_main_pts=pll_inputs_s.fsweep_main_pts;            
 	fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);           
+	fignum=0; %setup
 	fout_desired_Hz=pll_inputs_s.fout_desired_Hz;  % desired final output frequency (multiplier divider output
 	mult=pll_inputs_s.mult; %set to 1 for normal
-	Fref_Hz=pll_inputs_s.Fref_Hz; %reference/phase detector frequency (PFD freq)
+	Fref_Hz=pll_inputs_s.Fref_Hz; %reference/phase detector frequency (PFD freq)           
+	fout_desired_Hz
+	fout_Hz=fout_desired_Hz*(1/mult)   %VCO output frequency
+	Fvco=fout_Hz  %to make it clear                                    
+	%N=fout_desired_Hz/Fref_Hz
+
+
+
+
+
+
 
 	bUseVCOFromFile=pll_inputs_s.bUseVCOFromFile; %% if 1, use file below, otherwise params
 
@@ -59,14 +70,11 @@ if(startuptest==1)
 		pn_struct_vco.f=[fmain_Hz(1) pn_struct_vco.f];
 		pn_struct_vco.n=[pn_struct_vco.n(1) pn_struct_vco.n];
 	end
-
 	if (fmain_Hz(end)>pn_struct_vco.f(end))        %%NOTE: check high end
 	disp("max freq sweep extends above input data range, extending highest point");
 	pn_struct_vco.f=[ pn_struct_vco.f fmain_Hz(end)];
 	pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
 end        
-
-
 vco_n_interp=interp1(log10(pn_struct_vco.f),pn_struct_vco.n,log10(fmain_Hz));
 fignum=fignum+1;
 figure(fignum);
@@ -79,7 +87,7 @@ ylim(pn_ylimits);
 
 Nvco=10.^(vco_n_interp./20);  %convert to voltage    
 
-else
+else  %% use parameters entered instead of file input
 	Nvco_ref_dBc=pll_inputs_s.Nvco_ref_dBc; %VCO open loop noise
 	Fvco_ref_offset_Hz=pll_inputs_s.Fvco_ref_offset_Hz;                 
 	Kvco_Hz_volt=pll_inputs_s.Kvco_Hz_volt;  %tuning sensitivity of the VCO in Hz/volt    
@@ -99,32 +107,68 @@ ATTEN_dB=pll_inputs_s.ATTEN_dB; %additional attenuation requested by the 3rd pol
 
 F_tcxo_Hz=pll_inputs_s.F_tcxo_Hz;
 bUseTCXOFromFile=pll_inputs_s.bUseTCXOFromFile; %% if 1, load file below instead of params
+%% TCXO first
+if bUseTCXOFromFile==1
+	disp("Using TCXO noise from File");
+	load(pll_inputs_s.FileTCXO);
+	pn_struct_tcxo=pn_struct;
+	clear pn_struct; % get rid of this to avoid conflicts later
 
-FileTCXO=pll_inputs_s.FileTCXO; %uses standard pn_struct format  
-Ntcxo_ref_dBc=pll_inputs_s.Ntcxo_ref_dBc; %phase noise reference point
-Ftcxo_ref_offset_Hz=pll_inputs_s.Ftcxo_ref_offset_Hz;
+	if fmain_Hz(1)<pn_struct_tcxo.f(1)       %%NOTE: check low end
+	disp("main freq sweep extends below input data range, extending lowest point");
+	pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
+	pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
+else
+	%do nothing
+end
+if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
+disp("max freq sweep extends above input data range, extending highest point");
+pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
+pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
+	    else
+		    %do nothing
+	    end        
 
-Npd_ref_dBc=pll_inputs_s.Npd_ref_dBc; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
+	    N=fout_Hz/Fref_Hz    %actual VCO freq
+	    R=F_tcxo_Hz/Fref_Hz                                
 
-def_filename=pll_inputs_s.def_filename; %default results file saved (phase noise)
-fstart_main_Hz=pll_inputs_s.fstart_main_Hz;
-fstop_main_Hz=pll_inputs_s.fstop_main_Hz;
-fsweep_main_pts=pll_inputs_s.fsweep_main_pts; %100000; %3201;
-filter_override=pll_inputs_s.filter_override;
-filter_override_3rdpole_only=pll_inputs_s.filter_override_3rdpole_only;
-%% if filter override is set, these values will be substituted after
-%the synthesis stuff in the analysis
-CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
-RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
+	    tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
+	    fignum=fignum+1;
+	    figure(fignum);
+	    %semilogx(fmain_Hz,tcxo_n_interp);
+	    semilogx(fmain_Hz,tcxo_n_interp,pn_struct_tcxo.f,pn_struct_tcxo.n);
+	    title('TCXO interp verification');
 
-bSaveFigs=pll_inputs_s.bSaveFigs;
-bSaveFigsPDF=pll_inputs_s.bSaveFigsPDF;
-bSaveFigsJPG=pll_inputs_s.bSaveFigsJPG;
-pn_ylimits=[-200,0];
+	    Ntcxo=(N/R)*10.^(tcxo_n_interp./20);  %convert to voltage
+	    % clear pn_struct_tcxo;
+    else
+	    Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
+    end                               
+    % FileTCXO=pll_inputs_s.FileTCXO; %uses standard pn_struct format  
+    % Ntcxo_ref_dBc=pll_inputs_s.Ntcxo_ref_dBc; %phase noise reference point
+    % Ftcxo_ref_offset_Hz=pll_inputs_s.Ftcxo_ref_offset_Hz;
 
-bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
+    Npd_ref_dBc=pll_inputs_s.Npd_ref_dBc; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
 
-%%NOTE EDIT this chunk if you want to drive this file stand alone
+    def_filename=pll_inputs_s.def_filename; %default results file saved (phase noise)
+    %fstart_main_Hz=pll_inputs_s.fstart_main_Hz;
+    %fstop_main_Hz=pll_inputs_s.fstop_main_Hz;
+    %fsweep_main_pts=pll_inputs_s.fsweep_main_pts; %100000; %3201;
+    filter_override=pll_inputs_s.filter_override;
+    filter_override_3rdpole_only=pll_inputs_s.filter_override_3rdpole_only;
+    %% if filter override is set, these values will be substituted after
+    %the synthesis stuff in the analysis
+    CC1=pll_inputs_s.CC1; CC2=pll_inputs_s.CC2; 
+    RR2=pll_inputs_s.RR2; CC3=pll_inputs_s.CC3;  RR3=pll_inputs_s.RR3;
+
+    bSaveFigs=pll_inputs_s.bSaveFigs;
+    bSaveFigsPDF=pll_inputs_s.bSaveFigsPDF;
+    bSaveFigsJPG=pll_inputs_s.bSaveFigsJPG;
+    pn_ylimits=[-200,0];
+
+    bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
+
+    %%NOTE EDIT this chunk if you want to drive this file stand alone
 		    else %%%%%%%%%%%%%%%%%%%%%%STAND ALONE script version inputs
 			    warning("pll_input_s structure /inputs missing");
 			    return;
@@ -137,12 +181,6 @@ bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
 		    %
 		    %
 
-
-
-		    fout_desired_Hz
-		    fout_Hz=fout_desired_Hz*(1/mult)   %VCO output frequency
-		    Fvco=fout_Hz  %to make it clear
-		    fignum=0;
 		    %%%%%%%%%%
 		    %compensate phase margin request accounting for delay in phase detector
 		    PM_desired_adjusted_deg=PM_desired_deg-(180/pi)*angle(g_pd(BW_desired_Hz,Fref_Hz)) 
@@ -163,9 +201,7 @@ bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
 		    tau2=1/((wc^2)*(tau1+tau3))              %units seconds
 
 		    %Filter synth   %%NOTE: components can be overriden lower
-		    %N=fout_desired_Hz/Fref_Hz
-		    N=fout_Hz/Fref_Hz    %actual VCO freq
-		    R=F_tcxo_Hz/Fref_Hz
+
 		    disp("Synthesized values");
 		    C1=((Kphi_A_cycle*Kvco_Hz_volt*tau1)/(((wc^2)*N*tau2)))*sqrt((1+(wc^2 * tau2^2))/(((1+(wc^2 *tau1^2)*(1+(wc^2 * tau3^2))))))    %units Farads
 
@@ -220,220 +256,185 @@ bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
 
 		    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
 		    %%NOTE: Assume TCXO = reference into PLL
-		    %% TCXO first
-		    if bUseTCXOFromFile==1
-			    disp("Using TCXO noise from File");
-			    load(pll_inputs_s.FileTCXO);
-			    pn_struct_tcxo=pn_struct;
-			    clear pn_struct; % get rid of this to avoid conflicts later
 
-			    if fmain_Hz(1)<pn_struct_tcxo.f(1)       %%NOTE: check low end
-			    disp("main freq sweep extends below input data range, extending lowest point");
-			    pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
-			    pn_struct_tcxo.n=[pn_struct_tcxo.n(1) pn_struct_tcxo.n];
-		    else
-			    %do nothing
+
+		    Ntcxo_loop=mult*Ntcxo.*Gcl;
+
+		    fignum=fignum+1;
+		    figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
+		    grid on; grid minor;
+		    leg1=legend('TCXO','TCXO shaped by loop');
+		    xlabel('offset freq (Hz)');
+		    ylabel('ssb Noise (dBc/Hz)');
+		    set(leg1,'Interpreter','none');
+		    title('TCXO noise');
+		    ylim(pn_ylimits);
+
+
+
+
+
+		    %%Leave this here
+		    %
+		    Nvco_loop=mult*Nvco.*Gol_vcof;
+		    fignum=fignum+1;
+		    figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
+		    grid on; grid minor;
+		    title('VCO noise');
+		    leg1=legend('VCO','VCO shaped by loop');
+		    xlabel('offset freq (Hz)');
+		    ylabel('ssb Noise (dBc/Hz)');
+		    set(leg1,'Interpreter','none');       
+		    ylim(pn_ylimits);
+
+		    if bSaveFigs==1
+			    % print 
+			    if bSaveFigsPDF
+				    print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
+			    end
+			    if bSaveFigsJPG
+				    print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
+			    end
+		    end	     
+
+		    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%% See the PDF of the mathcad analysis for further explanation (www.RFdude.com)
+		    k=1.38e-23;  %Boltzmann's constant, joules/K 
+		    Temp=300; %K
+		    Vn_R3=rnoise(R3,Temp);       %volts   in 1 Hz bw:w
+		    Vn_R2=rnoise(R2,Temp);       %volts   in 1 Hz bw:w
+
+		    %% there are several functions/vectors to compute, so do another loop
+		    %NOTE: the multiplier factor (mult) will be applied to individual noise contributors along the way, so these intermediate results will be at the output frequency (equivalent)
+		    for ii=1:length(fmain_Hz)
+			    %%R2 noise analysis
+			    Zr2_1(ii)=R2+(1/(2*pi*fmain_Hz(ii)*1i*C2)); %R2 in series with C2
+			    Zr2_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C1); %C1 impedance
+			    Zr2_3(ii)=R3; % R3, duh
+			    Zr2_4(ii)=1/(2*pi*1i*fmain_Hz(ii)*C3); % C3 impedance
+			    Zr2_5(ii)=((Zr2_2(ii)*(Zr2_3(ii)+Zr2_4(ii))))/(Zr2_2(ii)+(Zr2_3(ii)+Zr2_4(ii))); %Z1 in parallel with Z2 and R3+C3
+			    %Zr
+			    Vnoise_R2(ii)=Vn_R2*(Zr2_5(ii)/(Zr2_1(ii)+Zr2_5(ii)  ))*(Zr2_4(ii)/(Zr2_3(ii)+Zr2_4(ii)));
+
+			    %%R3 noise analysis
+			    Zr3_1(ii)=(((1/(2*pi*fmain_Hz(ii)*1i*C1))*(R2+(1/(2*pi*fmain_Hz(ii)*1i*C2))))/(R2+(1/(2*pi*fmain_Hz(ii)*1i*C1))+(1/(2*pi*fmain_Hz(ii)*1i*C2))))+R3;  %parallel comb of C1 and C2 series with R2, plus R3 in series)
+			    Zr3_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C3); %impedance of C3
+			    Vnoise_R3(ii)=Vn_R3*(Zr3_2(ii)/(Zr3_1(ii)+Zr3_2(ii)));
+
+			    %%Modulation indices of resistor noise
+			    mR2(ii)=(sqrt(2)*Vnoise_R2(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
+			    mR3(ii)=(sqrt(2)*Vnoise_R3(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
+			    N_out_R2(ii)=mult*(mR2(ii)/2) *abs((1/(1+Gol(ii))));
+			    N_out_R3(ii)=mult*(mR3(ii)/2) *abs((1/(1+Gol(ii))));
+
+			    N_pd(ii)=mult*(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
+
+			    Ntot_no_R(ii)=(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
+			    Ntot_w_R(ii)=(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
+			    %sqrt((abs(N_out_R2(ii)))^2 sqrt((abs(N_out_R3(ii)))^2
 		    end
-		    if(fmain_Hz(end)>pn_struct_tcxo.f(end))        %%NOTE: check high end
-		    disp("max freq sweep extends above input data range, extending highest point");
-		    pn_struct_tcxo.f=[ pn_struct_tcxo.f fmain_Hz(end)];
-		    pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
-	    else
-		    %do nothing
-	    end        
 
+		    if 0 %hide...
+			    fignum=fignum+1;
+			    Volts_to_uVolts=1e-6;
+			    figure(fignum); semilogx(fmain_Hz,abs(Vnoise_R2)/Volts_to_uVolts,fmain_Hz,abs(Vnoise_R3)/Volts_to_uVolts) ;
+			    grid on; grid minor;
+			    title('baseband resistor noise');
+			    leg1=legend('R2','R3');
+			    xlabel('offset freq (Hz)');
+			    ylabel('uV RMS');
+			    set(leg1,'Interpreter','none'); 
+			    ylim(pn_ylimits);
 
-
-	    tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
-	    fignum=fignum+1;
-	    figure(fignum);
-	    %semilogx(fmain_Hz,tcxo_n_interp);
-	    semilogx(fmain_Hz,tcxo_n_interp,pn_struct_tcxo.f,pn_struct_tcxo.n);
-	    title('TCXO interp verification');
-
-	    Ntcxo=(N/R)*10.^(tcxo_n_interp./20);  %convert to voltage
-	    % clear pn_struct_tcxo;
-    else
-	    Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
-    end
-
-    Ntcxo_loop=mult*Ntcxo.*Gcl;
-
-    fignum=fignum+1;
-    figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
-    grid on; grid minor;
-    leg1=legend('TCXO','TCXO shaped by loop');
-    xlabel('offset freq (Hz)');
-    ylabel('ssb Noise (dBc/Hz)');
-    set(leg1,'Interpreter','none');
-    title('TCXO noise');
-    ylim(pn_ylimits);
-
-
-
-
-
-    %%Leave this here
-    %
-    Nvco_loop=mult*Nvco.*Gol_vcof;
-    fignum=fignum+1;
-    figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
-    grid on; grid minor;
-    title('VCO noise');
-    leg1=legend('VCO','VCO shaped by loop');
-    xlabel('offset freq (Hz)');
-    ylabel('ssb Noise (dBc/Hz)');
-    set(leg1,'Interpreter','none');       
-    ylim(pn_ylimits);
-
-    if bSaveFigs==1
-	    % print 
-	    if bSaveFigsPDF
-		    print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
-	    end
-	    if bSaveFigsJPG
-		    print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
-	    end
-    end	     
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%% See the PDF of the mathcad analysis for further explanation (www.RFdude.com)
-    k=1.38e-23;  %Boltzmann's constant, joules/K 
-    Temp=300; %K
-    Vn_R3=rnoise(R3,Temp);       %volts   in 1 Hz bw:w
-    Vn_R2=rnoise(R2,Temp);       %volts   in 1 Hz bw:w
-
-    %% there are several functions/vectors to compute, so do another loop
-    %NOTE: the multiplier factor (mult) will be applied to individual noise contributors along the way, so these intermediate results will be at the output frequency (equivalent)
-    for ii=1:length(fmain_Hz)
-	    %%R2 noise analysis
-	    Zr2_1(ii)=R2+(1/(2*pi*fmain_Hz(ii)*1i*C2)); %R2 in series with C2
-	    Zr2_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C1); %C1 impedance
-	    Zr2_3(ii)=R3; % R3, duh
-	    Zr2_4(ii)=1/(2*pi*1i*fmain_Hz(ii)*C3); % C3 impedance
-	    Zr2_5(ii)=((Zr2_2(ii)*(Zr2_3(ii)+Zr2_4(ii))))/(Zr2_2(ii)+(Zr2_3(ii)+Zr2_4(ii))); %Z1 in parallel with Z2 and R3+C3
-	    %Zr
-	    Vnoise_R2(ii)=Vn_R2*(Zr2_5(ii)/(Zr2_1(ii)+Zr2_5(ii)  ))*(Zr2_4(ii)/(Zr2_3(ii)+Zr2_4(ii)));
-
-	    %%R3 noise analysis
-	    Zr3_1(ii)=(((1/(2*pi*fmain_Hz(ii)*1i*C1))*(R2+(1/(2*pi*fmain_Hz(ii)*1i*C2))))/(R2+(1/(2*pi*fmain_Hz(ii)*1i*C1))+(1/(2*pi*fmain_Hz(ii)*1i*C2))))+R3;  %parallel comb of C1 and C2 series with R2, plus R3 in series)
-	    Zr3_2(ii)=1/(2*pi*fmain_Hz(ii)*1i*C3); %impedance of C3
-	    Vnoise_R3(ii)=Vn_R3*(Zr3_2(ii)/(Zr3_1(ii)+Zr3_2(ii)));
-
-	    %%Modulation indices of resistor noise
-	    mR2(ii)=(sqrt(2)*Vnoise_R2(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
-	    mR3(ii)=(sqrt(2)*Vnoise_R3(ii)*Kvco_Hz_volt)/fmain_Hz(ii);
-	    N_out_R2(ii)=mult*(mR2(ii)/2) *abs((1/(1+Gol(ii))));
-	    N_out_R3(ii)=mult*(mR3(ii)/2) *abs((1/(1+Gol(ii))));
-
-	    N_pd(ii)=mult*(10^((Npd_ref_dBc+10*log10(Fref_Hz) )/20) ) *Gcl(ii)*N;
-
-	    Ntot_no_R(ii)=(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2));
-	    Ntot_w_R(ii)=(sqrt((abs(Nvco_loop(ii)))^2 +(abs(Ntcxo_loop(ii)))^2 + (abs(N_pd(ii)))^2   +(abs(N_out_R2(ii)))^2 +(abs(N_out_R3(ii)))^2));
-	    %sqrt((abs(N_out_R2(ii)))^2 sqrt((abs(N_out_R3(ii)))^2
-    end
-
-    if 0 %hide...
-	    fignum=fignum+1;
-	    Volts_to_uVolts=1e-6;
-	    figure(fignum); semilogx(fmain_Hz,abs(Vnoise_R2)/Volts_to_uVolts,fmain_Hz,abs(Vnoise_R3)/Volts_to_uVolts) ;
-	    grid on; grid minor;
-	    title('baseband resistor noise');
-	    leg1=legend('R2','R3');
-	    xlabel('offset freq (Hz)');
-	    ylabel('uV RMS');
-	    set(leg1,'Interpreter','none'); 
-	    ylim(pn_ylimits);
-
-    end
-    if 1 %unhide...
-	    fignum=fignum+1;
-	    %Volts_to_uVolts=1e-6;
-	    figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
-	    grid on; grid minor;
-	    title('vco output resistor noise,PD noise');
-	    leg1=legend('R2','R3','Phase Detector');
-	    xlabel('offset freq (Hz)');
-	    ylabel('dBc/Hz');
-	    set(leg1,'Interpreter','none');
-	    ylim(pn_ylimits);
-
-	    if bSaveFigs==1
-		    % print 
-		    if bSaveFigsPDF
-			    print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
 		    end
-		    if bSaveFigsJPG
-			    print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
+		    if 1 %unhide...
+			    fignum=fignum+1;
+			    %Volts_to_uVolts=1e-6;
+			    figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
+			    grid on; grid minor;
+			    title('vco output resistor noise,PD noise');
+			    leg1=legend('R2','R3','Phase Detector');
+			    xlabel('offset freq (Hz)');
+			    ylabel('dBc/Hz');
+			    set(leg1,'Interpreter','none');
+			    ylim(pn_ylimits);
+
+			    if bSaveFigs==1
+				    % print 
+				    if bSaveFigsPDF
+					    print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
+				    end
+				    if bSaveFigsJPG
+					    print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
+				    end
+			    end	          
+			    %VCO output frequency
 		    end
-	    end	          
-	    %VCO output frequency
-    end
-    if 1 %unhide...
-	    fignum=fignum+1;
-	    %Volts_to_uVolts=1e-6;
-	    figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R)) ;
-	    grid on; grid minor;
-	    title('Totals');
-	    leg1=legend('Total no R','Total');
-	    xlabel('offset freq (Hz)');
-	    ylabel('dBc/Hz');
-	    set(leg1,'Interpreter','none');  
-	    ylim(pn_ylimits);
+		    if 1 %unhide...
+			    fignum=fignum+1;
+			    %Volts_to_uVolts=1e-6;
+			    figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R)) ;
+			    grid on; grid minor;
+			    title('Totals');
+			    leg1=legend('Total no R','Total');
+			    xlabel('offset freq (Hz)');
+			    ylabel('dBc/Hz');
+			    set(leg1,'Interpreter','none');  
+			    ylim(pn_ylimits);
 
-	    if bSaveFigs==1
-		    % print 
-		    if bSaveFigsPDF
-			    print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
+			    if bSaveFigs==1
+				    % print 
+				    if bSaveFigsPDF
+					    print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
+				    end
+				    if bSaveFigsJPG
+					    print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
+				    end
+			    end	    
+		    end     
+
+		    %%NOTE: one with main contributors and total
+		    if 1 %unhide...
+			    fignum=fignum+1;
+			    figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Nvco_loop),fmain_Hz,20*log10(Ntcxo_loop),fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
+			    grid on; grid minor;
+			    title('Total, contributors');
+			    leg1=legend('Total with Resistors','VCO','TCXO ref','R2','R3','Phase detector');
+			    xlabel('offset freq (Hz)');
+			    ylabel('dBc/Hz');
+			    set(leg1,'Interpreter','none');    
+			    axis tight;
+			    ylim(pn_ylimits);
+
+			    if bSaveFigs==1
+				    % print 
+				    if bSaveFigsPDF
+					    print(fignum,strcat(FigSave_file_basename,'_contribs_total.pdf'));
+				    end
+				    if bSaveFigsJPG
+					    print(fignum,strcat(FigSave_file_basename,'_contribs_total.jpg')); 
+				    end
+			    end	    
+		    end        
+
+
+
+		    %%file write (comment out if not wanted)
+		    pn_struct.fc=fout_desired_Hz;
+		    pn_struct.f=fmain_Hz;
+		    pn_struct.n=20*log10(Ntot_w_R);
+		    pn_struct.name='default output from RFdude.com PLL worksheet';
+		    save(def_filename,'pn_struct');
+
+		    if bWriteCSVtable==1
+			    fid=fopen(strcat(file_basename,"_results.csv"),"w");
+			    fprintf(fid,"PLL analysis output report\r\n");
+			    fprintf(fid,"Fout=%d mult=%d Fvco=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,mult,Fvco,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
+			    fprintf(fid,"C1=%d C2=%d R2=%d R3=%d C3=%d\r\n",C1,C2,R2,R3,C3);
+
+			    fprintf(fid,"Freq(Hz),Ntotal_with_resistors(dBc/Hz)\r\n");                                                              
+			    for ii=1:length(fmain_Hz)
+				    fprintf(fid,"%d,%d\r\n",fmain_Hz(ii),20*log10(Ntot_w_R(ii)));                                                              
+			    end
+			    fclose(fid);
 		    end
-		    if bSaveFigsJPG
-			    print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
-		    end
-	    end	    
-    end     
-
-    %%NOTE: one with main contributors and total
-    if 1 %unhide...
-	    fignum=fignum+1;
-	    figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Nvco_loop),fmain_Hz,20*log10(Ntcxo_loop),fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
-	    grid on; grid minor;
-	    title('Total, contributors');
-	    leg1=legend('Total with Resistors','VCO','TCXO ref','R2','R3','Phase detector');
-	    xlabel('offset freq (Hz)');
-	    ylabel('dBc/Hz');
-	    set(leg1,'Interpreter','none');    
-	    axis tight;
-	    ylim(pn_ylimits);
-
-	    if bSaveFigs==1
-		    % print 
-		    if bSaveFigsPDF
-			    print(fignum,strcat(FigSave_file_basename,'_contribs_total.pdf'));
-		    end
-		    if bSaveFigsJPG
-			    print(fignum,strcat(FigSave_file_basename,'_contribs_total.jpg')); 
-		    end
-	    end	    
-    end        
-
-
-
-    %%file write (comment out if not wanted)
-    pn_struct.fc=fout_desired_Hz;
-    pn_struct.f=fmain_Hz;
-    pn_struct.n=20*log10(Ntot_w_R);
-    pn_struct.name='default output from RFdude.com PLL worksheet';
-    save(def_filename,'pn_struct');
-
-    if bWriteCSVtable==1
-	    fid=fopen(strcat(file_basename,"_results.csv"),"w");
-	    fprintf(fid,"PLL analysis output report\r\n");
-	    fprintf(fid,"Fout=%d mult=%d Fvco=%d Kvco=%d Kpd=%d Fref=%d\r\n",fout_desired_Hz,mult,Fvco,Kvco_Hz_volt,Kphi_A_cycle,Fref_Hz);
-	    fprintf(fid,"C1=%d C2=%d R2=%d R3=%d C3=%d\r\n",C1,C2,R2,R3,C3);
-
-	    fprintf(fid,"Freq(Hz),Ntotal_with_resistors(dBc/Hz)\r\n");                                                              
-	    for ii=1:length(fmain_Hz)
-		    fprintf(fid,"%d,%d\r\n",fmain_Hz(ii),20*log10(Ntot_w_R(ii)));                                                              
-	    end
-	    fclose(fid);
-    end
 
