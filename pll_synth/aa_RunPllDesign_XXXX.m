@@ -4,8 +4,23 @@
 %pll analysis; it always needs to be called with the inputs setup like this file does -- just too much clunky/messy overhead to handle both cases.
 %
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%NOTE:  Please read:
+%-when the "bUsexxFromFile" flags are set, all characteristics of the source/pn_struct will override local settings (see pnformat.txt -fc, noise, kvco)
+% --->when the flag is not set, then the manually entered params will be used
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Copyright 2025 Lance Lascari / RFdude.com LLC       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; close all; clear;
+
 pll_inputs_s.fout_desired_Hz=445e6;
 pll_inputs_s.mult=1; %multiplier
 pll_inputs_s.Fref_Hz=100e3;
@@ -26,7 +41,7 @@ pll_inputs_s.FileTCXO="../pn/datfiles_local/16M_VCTCXO_20250930a_pndata.mat"; %u
 pll_inputs_s.Ntcxo_ref_dBc=-135;
 pll_inputs_s.Ftcxo_ref_offset_Hz=100;
 
-pll_inputs_s.bUseVCOFromFile=1; %% if 1, use file below, otherwise params
+pll_inputs_s.bUseVCOFromFile=0; %% if 1, use file below, otherwise params
 pll_inputs_s.FileVCO="../pn/datfiles_local/vcso_1G.mat"; %uses standard pn_struct format    
 pll_inputs_s.Nvco_ref_dBc=-115; %VCO open loop noise
 pll_inputs_s.Fvco_ref_offset_Hz=10e3; 
