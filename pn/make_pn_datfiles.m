@@ -6,6 +6,9 @@
 %Copyright 2025 Lance Lascari / RFdude.com LLC
 %
 
+clear;
+disp("Generating some phase noise data files");
+
 ii=1;
 % device A
 f= [1e3 2e3 5e3 1e4 2e4  5e4 1e5  2e5  5e5  1e6  1e7 1e8];  

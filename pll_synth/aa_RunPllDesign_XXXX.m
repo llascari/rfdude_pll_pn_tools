@@ -8,7 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %NOTE:  Please read:
-%-when the "bUsexxFromFile" flags are set, all characteristics of the source/pn_struct will override local settings (see pnformat.txt -fc, noise, kvco)
+%-when the "bUseVCO/TCXOFromFile" flags are set, all characteristics of the source/pn_struct will override local settings (see pnformat.txt -fc, noise, kvco)
 % --->when the flag is not set, then the manually entered params will be used
 %
 %
@@ -31,9 +31,8 @@ pll_inputs_s.PM_desired_deg=55;
 pll_inputs_s.ATTEN_dB=0.01
 
 %pll_inputs_s.F_tcxo_Hz=12.8e6;  %need this for file or params
-%pll_inputs_s.F_tcxo_Hz=1e9;  %need this for file or params
+pll_inputs_s.bUseTCXOFromFile=0; %% if 1, load file below instead of params
 pll_inputs_s.F_tcxo_Hz=16e6;  %need this for file or params
-pll_inputs_s.bUseTCXOFromFile=1; %% if 1, load file below instead of params
 %pll_inputs_s.FileTCXO="TCXO_ref_a.mat"; %uses standard pn_struct format    
 %pll_inputs_s.FileTCXO="../pn/datfiles_local/vcso_1G.mat"; %uses standard pn_struct format    
 %pll_inputs_s.FileTCXO="../pn/datfiles_local/ref40M.mat"; %uses standard pn_struct format    
@@ -56,7 +55,7 @@ pll_inputs_s.fsweep_main_pts=401; %100000; %3201;
 
 
 pll_inputs_s.filter_override=0;
-pll_inputs_s.filter_override_3rdpole_only=1;
+pll_inputs_s.filter_override_3rdpole_only=0;
 
 pll_inputs_s.CC1=1e-12;
 pll_inputs_s.CC2=1e-12;

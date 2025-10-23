@@ -11,12 +11,6 @@
 %Copyright 2025 Lance Lascari / RFdude.com LLC
 %
 
-% device A
-%pn_struct.f=  [1e3 2e3 5e3 1e4 2e4  5e4 1e5  2e5  5e5  1e6  1e7 1e8];
-%pn_struct.n=[-60 -58 -68 -82 -93 -101 -109 -114 -124 -129 -149 -149];
-
-%save('datfiles_local/device_a.mat','pn_struct');
-clear;
 %different instruments have offsets.  need to figure out how to 
 %automatically parse
 %NOTE: UGLY!
@@ -36,7 +30,7 @@ fid=fopen(strcat(fpath,fname));
 
 %file_input_text=importdata(strcat(fpath,fname),",");
 
-[file_basename rem ]=strtok(fname,'.'); %strip off extension
+[file_basename rem ]=strtok(fname,'.') %strip off extension
 
 %TODO -- come up with auto detect file type someday
 %last entry is the default selected.  if that's not entered, it defauts to yes/no, which is dumb.
@@ -52,7 +46,7 @@ searchdone=0;
 ii=1;
 while (searchdone==0)
 %while (ii<10)
-           str_tmp=fgets(fid)
+           str_tmp=fgets(fid);
 	   if(startsWith(str_tmp,"Offset")) %E5052b case
 		ii
 		startline=ii+1

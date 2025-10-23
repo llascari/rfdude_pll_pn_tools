@@ -46,6 +46,7 @@ ylabel('PN (dBc/Hz)');
 xlabel('offset freq, Hz');
 legend('A');
 grid on; grid minor;
+axis tight;
 
 
 %% the integration function actually returns integrated phase error in radians, so 20*log10 to get EVM  or  1/SNR, or square it to get the power.
@@ -70,7 +71,7 @@ semilogx(ll_points,integ_noise_dB_vs_ll); %,pn_struct.f,pn_struct.ptot);
 xlabel('lower integration limit (Hz)');
 ylabel('CNR due to phase noise');
 legend('signal to phase noise integrated from lower limit to xx');
-grid on; grid minor;
+grid on; grid minor; axis tight;
 
 
 

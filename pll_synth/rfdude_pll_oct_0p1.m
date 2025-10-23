@@ -44,7 +44,7 @@ if(startuptest==1)
 	fout_desired_Hz
 	fout_Hz=fout_desired_Hz*(1/mult)   %VCO output frequency
 	Fvco=fout_Hz  %to make it clear                                    
-	
+
 	bUseVCOFromFile=pll_inputs_s.bUseVCOFromFile; %% if 1, use file below, otherwise params
 	FileVCO=pll_inputs_s.FileVCO; %uses standard pn_struct format    
 	%% will be used for noise later, mostly
@@ -56,6 +56,11 @@ if(startuptest==1)
 		load(pll_inputs_s.FileVCO);
 		pn_struct_vco=pn_struct;     
 		clear pn_struct; %avoid conflict later
+		pn_struct_vco.kvco
+		pn_struct_vco.name
+		pn_struct_vco.comment
+		pn_struct_vco.clock
+ 		Kvco_Hz_volt=pn_struct_vco.kvco;
 
 		if (fmain_Hz(1)<pn_struct_vco.f(1))       %%NOTE: check low end
 		disp("main freq sweep extends below input data range, extending lowest point");
@@ -106,6 +111,8 @@ if bUseTCXOFromFile==1
 	pn_struct_tcxo=pn_struct;
 	clear pn_struct; % get rid of this to avoid conflicts later
 
+
+
 	if fmain_Hz(1)<pn_struct_tcxo.f(1)       %%NOTE: check low end
 	disp("main freq sweep extends below input data range, extending lowest point");
 	pn_struct_tcxo.f=[fmain_Hz(1) pn_struct_tcxo.f];
@@ -134,18 +141,17 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 	    Ntcxo=(N/R)*10.^(tcxo_n_interp./20);  %convert to voltage
 	    % clear pn_struct_tcxo;
     else
+
+	    N=fout_Hz/Fref_Hz    %actual VCO freq
+	    R=F_tcxo_Hz/Fref_Hz                                
+	    Ftcxo_ref_offset_Hz=pll_inputs_s.Ftcxo_ref_offset_Hz;
+	    Ntcxo_ref_dBc=pll_inputs_s.Ntcxo_ref_dBc;
 	    Ntcxo=(N/R)*noise_basic(fmain_Hz,Ftcxo_ref_offset_Hz,Ntcxo_ref_dBc);
     end                               
-    % FileTCXO=pll_inputs_s.FileTCXO; %uses standard pn_struct format  
-    % Ntcxo_ref_dBc=pll_inputs_s.Ntcxo_ref_dBc; %phase noise reference point
-    % Ftcxo_ref_offset_Hz=pll_inputs_s.Ftcxo_ref_offset_Hz;
 
     Npd_ref_dBc=pll_inputs_s.Npd_ref_dBc; %Phase detector figure of merit (typically degrades 10*log10(Fpfd_Hz))
 
     def_filename=pll_inputs_s.def_filename; %default results file saved (phase noise)
-    %fstart_main_Hz=pll_inputs_s.fstart_main_Hz;
-    %fstop_main_Hz=pll_inputs_s.fstop_main_Hz;
-    %fsweep_main_pts=pll_inputs_s.fsweep_main_pts; %100000; %3201;
     filter_override=pll_inputs_s.filter_override;
     filter_override_3rdpole_only=pll_inputs_s.filter_override_3rdpole_only;
     %% if filter override is set, these values will be substituted after
