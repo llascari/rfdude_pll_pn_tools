@@ -1,3 +1,4 @@
+%% 20251202 LL -- adding some 
 %%20250923 LL
 %pn_simple_analysis1a.m
 %--basic gui-prompted input file, analysis setup here
@@ -21,8 +22,10 @@ close all;
 [fname,fpath,fltidx]=uigetfile('*.mat');
 load(strcat(fpath,fname));
 
-
-
+%%NOTE some setup for channel integration settings
+chsize=100e3; 
+chutil=0.8; %0.8* chsize (integrate over this portion centered on channels)
+numch=5; %number of adjacent channels to analyze
 %rename pn data
 
 pn_sourceA=pn_struct;
@@ -74,4 +77,14 @@ legend('signal to phase noise integrated from lower limit to xx');
 grid on; grid minor; axis tight;
 
 
+ %% adjacent channel analysis
+  adj_ch_conversion=zeros(1,numch);
 
+ for ii=1:numch
+ offs_low=(ii*chsize)-((chutil*chsize)/2)
+ offs_high=(ii*chsize)+((chutil*chsize)/2)
+ %%NOTE -3dB adder to compensate for DSB calc
+  adj_ch_conversion(ii)=-3+ (-20*log10(integrate_ssb_pnoise(x,pn_dBcHz,offs_low,offs_high)));
+ end
+
+ adj_ch_conversion
