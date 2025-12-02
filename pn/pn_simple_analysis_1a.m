@@ -20,6 +20,7 @@ close all;
 % 
 
 [fname,fpath,fltidx]=uigetfile('*.mat');
+
 load(strcat(fpath,fname));
 
 %%NOTE some setup for channel integration settings
@@ -85,7 +86,7 @@ grid on; grid minor; axis tight;
  offs_low=(ii*chsize)-((chutil*chsize)/2);
  offs_high=(ii*chsize)+((chutil*chsize)/2);
  %%NOTE -3dB adder to compensate for DSB calc
-  tmp=-3+ (20*log10(integrate_ssb_pnoise(x,pn_dBcHz,offs_low,offs_high)))          ; %% splitting this was for debugging a quirky problem where the finer array produced during the logspace frequency axis interpolation didn't have > 1 pt per channel analyzed
+  tmp=-3+ (20*log10(integrate_ssb_pnoise(x,pn_dBcHz,offs_low,offs_high))) ;         ; %% splitting this was for debugging a quirky problem where the finer array produced during the logspace frequency axis interpolation didn't have > 1 pt per channel analyzed
   adj_ch_conversion(ii)=tmp;
  % ii
  end
@@ -99,4 +100,25 @@ ylabel('reciprocal mixing conversion factor');
 legstring=strcat('off channel conv fact (modem agnostic) source:',pn_sourceA.name);
 
 legend(legstring);
-grid on; grid minor; axis tight;               
+grid on; grid minor; axis tight;      
+
+[file_basename rem]=strtok(fname,'.'); %% strip off ext of base input data filename
+adj_ch_output_folder=uigetdir()
+adj_ch_filename=strcat(adj_ch_output_folder,'/','adj_channel_rej_',file_basename,'.csv')  %%NOTE: fname from input above
+adj_ch_file=fopen(adj_ch_filename,"w");
+
+fprintf(adj_ch_file,"off channel rejection factors based on phase noise\r\n");
+fprintf(adj_ch_file,"source name %s\r\n",pn_sourceA.name);
+
+fprintf(adj_ch_file,"channel size(Hz),%f\r\n",chsize);
+fprintf(adj_ch_file,"channel utilization,%f\r\n",chutil);
+
+fprintf(adj_ch_file,"channel offset,conversion factor (dB)\r\n");
+for ii=1:numch
+	fprintf(adj_ch_file,"%d,%f\r\n",ii,adj_ch_conversion(ii));
+end
+
+
+fclose(adj_ch_file);
+
+
