@@ -96,5 +96,7 @@ adjch_bar=bar(adj_ch_conversion);
 
 xlabel('channel offset');
 ylabel('reciprocal mixing conversion factor');
-legend('off channel conversion factors(modem agnostic)');
+legstring=strcat('off channel conv fact (modem agnostic) source:',pn_sourceA.name);
+
+legend(legstring);
 grid on; grid minor; axis tight;               
