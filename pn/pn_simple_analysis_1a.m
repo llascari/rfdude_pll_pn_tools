@@ -23,18 +23,19 @@ close all;
 load(strcat(fpath,fname));
 
 %%NOTE some setup for channel integration settings
-chsize=100e3; 
+chsize=10e3; 
 chutil=0.8; %0.8* chsize (integrate over this portion centered on channels)
-numch=5; %number of adjacent channels to analyze
+numch=20; %number of adjacent channels to analyze
 %rename pn data
-
 pn_sourceA=pn_struct;
 
-
+%%Note, might need to tweak log point multiplier if the interpolated point set doesn't
+%contain enough points to provide enough for channel analysis
+npts_log_multiplier=200;
  ll=0.1e3;
 ul=1e6;
 %npts=100;
-npts=1+(50*(log10(pn_sourceA.f(end))-log10(pn_sourceA.f(1))));
+npts=1+(npts_log_multiplier*(log10(pn_sourceA.f(end))-log10(pn_sourceA.f(1))));
 x=logspace(log10(pn_sourceA.f(1)),log10(pn_sourceA.f(end)),npts);
 
 
@@ -81,10 +82,19 @@ grid on; grid minor; axis tight;
   adj_ch_conversion=zeros(1,numch);
 
  for ii=1:numch
- offs_low=(ii*chsize)-((chutil*chsize)/2)
- offs_high=(ii*chsize)+((chutil*chsize)/2)
+ offs_low=(ii*chsize)-((chutil*chsize)/2);
+ offs_high=(ii*chsize)+((chutil*chsize)/2);
  %%NOTE -3dB adder to compensate for DSB calc
-  adj_ch_conversion(ii)=-3+ (-20*log10(integrate_ssb_pnoise(x,pn_dBcHz,offs_low,offs_high)));
+  tmp=-3+ (20*log10(integrate_ssb_pnoise(x,pn_dBcHz,offs_low,offs_high)))          ; %% splitting this was for debugging a quirky problem where the finer array produced during the logspace frequency axis interpolation didn't have > 1 pt per channel analyzed
+  adj_ch_conversion(ii)=tmp;
+ % ii
  end
 
  adj_ch_conversion
+ figure();
+adjch_bar=bar(adj_ch_conversion);             
+
+xlabel('channel offset');
+ylabel('reciprocal mixing conversion factor');
+legend('off channel conversion factors(modem agnostic)');
+grid on; grid minor; axis tight;               
