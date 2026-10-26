@@ -162,6 +162,42 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
     bSaveFigs=pll_inputs_s.bSaveFigs;
     bSaveFigsPDF=pll_inputs_s.bSaveFigsPDF;
     bSaveFigsJPG=pll_inputs_s.bSaveFigsJPG;
+    bDoTransient=0;
+    transient_delta_f_Hz=5e3;
+    transient_tmax_s=15e-3;
+    transient_points=12501;
+    transient_ftol_Hz=1e3;
+    if isfield(pll_inputs_s,'bDoTransient')
+        bDoTransient=pll_inputs_s.bDoTransient;
+    end
+    if isfield(pll_inputs_s,'transient_delta_f_Hz')
+        transient_delta_f_Hz=pll_inputs_s.transient_delta_f_Hz;
+    end
+    if isfield(pll_inputs_s,'transient_tmax_s')
+        transient_tmax_s=pll_inputs_s.transient_tmax_s;
+    end
+    if isfield(pll_inputs_s,'transient_points')
+        transient_points=pll_inputs_s.transient_points;
+    end
+    if isfield(pll_inputs_s,'transient_ftol_Hz')
+        transient_ftol_Hz=pll_inputs_s.transient_ftol_Hz;
+    end
+    bDoTransientNonlinear=0;
+    transient_nl_steps_per_ref=100;
+    transient_nl_fvco_min_Hz=-Inf;
+    transient_nl_fvco_max_Hz=Inf;
+    if isfield(pll_inputs_s,'bDoTransientNonlinear')
+        bDoTransientNonlinear=pll_inputs_s.bDoTransientNonlinear;
+    end
+    if isfield(pll_inputs_s,'transient_nl_steps_per_ref')
+        transient_nl_steps_per_ref=pll_inputs_s.transient_nl_steps_per_ref;
+    end
+    if isfield(pll_inputs_s,'transient_nl_fvco_min_Hz')
+        transient_nl_fvco_min_Hz=pll_inputs_s.transient_nl_fvco_min_Hz;
+    end
+    if isfield(pll_inputs_s,'transient_nl_fvco_max_Hz')
+        transient_nl_fvco_max_Hz=pll_inputs_s.transient_nl_fvco_max_Hz;
+    end
     pn_ylimits=[-200,0];
 
     bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
@@ -251,6 +287,262 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 		    BW_actual=fmain_Hz(BW_idx)
 		    PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
 
+		    if bDoTransient==1 %%NOTE (copilot assist)
+			    % Small-signal reference-frequency step response of this loop.
+			    % The first-order Pade term approximates the half-reference-period
+			    % delay in g_pd when loop bandwidth is well below Fref_Hz.
+			    % This does not model PFD saturation, cycle slips, or VCO limits.
+			    % Background: D. Banerjee, PLL Performance, Simulation, and Design
+			    % (the 2002 Mathcad worksheet cites this for its pole/residue method);
+			    % R. E. Best, Phase-Locked Loops: Design, Simulation, and Applications,
+			    % 6th ed., McGraw-Hill, 2014; F. M. Gardner, Phaselock Techniques,
+			    % 3rd ed., Wiley, 2005.
+			    if (transient_tmax_s<=0 || transient_points<2 || transient_points~=fix(transient_points) || transient_ftol_Hz<=0)
+				    error('Transient time, point count, and frequency tolerance must be positive');
+			    end
+
+			    transient_K=Kphi_A_cycle*Kvco_Hz_volt/N;
+			    transient_c0=C1+C2+C3;
+			    transient_c1=(R2*C1*C2)+(R2*C2*C3)+(R3*C3*(C1+C2));
+			    transient_c2=R2*R3*C1*C2*C3;
+
+			    % Closed-loop frequency transfer, including a Pade approximation
+			    % of g_pd(s) ~= exp(-s/(2*Fref_Hz)).
+			    transient_loop_den=[transient_c2 transient_c1 transient_c0 0 0];
+			    transient_loop_num=transient_K*[R2*C2 1];
+			    transient_pade_s=1/(4*Fref_Hz);
+			    transient_pade_den=[transient_pade_s 1];
+			    transient_pade_num=[-transient_pade_s 1];
+			    transient_den=conv(transient_loop_den,transient_pade_den);
+			    transient_num=conv(transient_loop_num,transient_pade_num);
+			    transient_den(end-length(transient_num)+1:end)=transient_den(end-length(transient_num)+1:end)+transient_num;
+
+			    if any(real(roots(transient_den))>=0)
+				    error('Transient response is not stable; check the PLL filter and loop settings');
+			    end
+
+			    transient_den_scale=transient_den(1);
+			    transient_den=transient_den/transient_den_scale;
+			    transient_num=transient_num/transient_den_scale;
+			    transient_A=[zeros(4,1) eye(4); -fliplr(transient_den(2:end))];
+			    transient_B=[zeros(4,1); 1];
+			    transient_C=fliplr([zeros(1,5-length(transient_num)) transient_num]);
+			    transient_t_s=linspace(0,transient_tmax_s,transient_points)';
+			    transient_start_Hz=fout_desired_Hz+transient_delta_f_Hz;
+			    % Exact discretization for the constant (step) input via the matrix
+			    % exponential; much faster than ode45 for this stiff loop.
+			    transient_dt=transient_t_s(2)-transient_t_s(1);
+			    transient_M=expm([transient_A transient_B; zeros(1,6)]*transient_dt);
+			    transient_Ad=transient_M(1:5,1:5);
+			    transient_Bd=transient_M(1:5,6);
+			    transient_x=zeros(transient_points,5);
+			    for transient_k=2:transient_points
+				    transient_x(transient_k,:)=(transient_Ad*transient_x(transient_k-1,:)'-transient_Bd*transient_delta_f_Hz)';
+			    end
+			    transient_freq_Hz=transient_start_Hz+transient_x*transient_C';
+
+			    transient_outside=find(abs(transient_freq_Hz-fout_desired_Hz)>transient_ftol_Hz);
+			    if isempty(transient_outside)
+				    transient_lock_time_s=0;
+			    elseif transient_outside(end)<length(transient_t_s)
+				    transient_lock_time_s=transient_t_s(transient_outside(end)+1);
+			    else
+				    transient_lock_time_s=NaN;
+			    end
+
+			    if isnan(transient_lock_time_s)
+				    disp('Transient response did not settle within the requested time span');
+			    else
+				    fprintf('Estimated small-signal settling time: %.6g s (within +/- %.6g Hz)\n',transient_lock_time_s,transient_ftol_Hz);
+			    end
+
+			    fignum=fignum+1;
+			    figure(fignum);
+			    plot(transient_t_s*1e3,transient_freq_Hz,transient_t_s*1e3,fout_desired_Hz*ones(size(transient_t_s)),transient_t_s*1e3,(fout_desired_Hz+transient_ftol_Hz)*ones(size(transient_t_s)),transient_t_s*1e3,(fout_desired_Hz-transient_ftol_Hz)*ones(size(transient_t_s)));
+			    grid on;
+			    xlabel('time (ms)');
+			    ylabel('VCO frequency (Hz)');
+			    title('PLL Small-Signal Frequency-Step Response');
+			    leg1=legend('VCO frequency','target','upper tolerance','lower tolerance');
+			    set(leg1,'Interpreter','none');
+			    if bSaveFigs==1
+				    if bSaveFigsPDF
+					    print(fignum,strcat(FigSave_file_basename,'_transient.pdf'));
+				    end
+				    if bSaveFigsJPG
+					    print(fignum,strcat(FigSave_file_basename,'_transient.jpg'));
+				    end
+			    end
+		    end
+
+		    if bDoTransientNonlinear==1 %%NOTE (copilot assist)
+			    % Nonlinear (large-signal) frequency-step response: tri-state PFD and
+			    % charge pump driven by reference/divider edge timing, the actual
+			    % C1/R2/C2/R3/C3 loop filter, and an integrated VCO phase.  Captures
+			    % PFD saturation, cycle slips, and optional VCO tuning-range limits.
+			    % Not modeled: PFD reset delay/dead zone, charge-pump mismatch,
+			    % leakage or compliance limits, and divider/VCO noise.
+			    % Method: the filter is advanced with an exact zero-order-hold
+			    % (matrix exponential) step; within each step the charge-pump current
+			    % is replaced by its exact average over the PFD UP/DN pulse widths, so
+			    % charge is conserved regardless of where edges fall in the step.
+			    % Credits/references:
+			    % F. M. Gardner, "Charge-Pump Phase-Lock Loops," IEEE Trans. Commun.,
+			    %   vol. COM-28, no. 11, pp. 1849-1858, Nov. 1980 (tri-state PFD and
+			    %   charge-pump behavior, sampled nature of the loop).
+			    % M. H. Perrott, "Fast and Accurate Behavioral Simulation of
+			    %   Fractional-N Frequency Synthesizers and other PLL/DLL Circuits,"
+			    %   Proc. Design Automation Conf. (DAC), 2002 (event-driven, charge/
+			    %   area-conserving treatment of PFD pulses within a time step).
+			    % D. Banerjee, PLL Performance, Simulation, and Design (cycle slipping,
+			    %   lock time; cited by the 2002 Mathcad worksheet).
+			    % R. E. Best, Phase-Locked Loops: Design, Simulation, and Applications,
+			    %   6th ed., McGraw-Hill, 2014 (PFD lock-in/pull-in behavior).
+			    if (transient_tmax_s<=0 || transient_ftol_Hz<=0 || transient_nl_steps_per_ref<10 || transient_nl_steps_per_ref~=fix(transient_nl_steps_per_ref))
+				    error('Nonlinear transient needs positive time and tolerance, and integer steps per reference period >= 10');
+			    end
+
+			    nl_Icp_A=Kphi_A_cycle;  %charge pump current; average current = Kphi*(phase error in cycles)
+			    nl_dt=1/(Fref_Hz*transient_nl_steps_per_ref);
+			    nl_nsteps=ceil(transient_tmax_s/nl_dt);
+			    nl_fmin_off=transient_nl_fvco_min_Hz-Fvco;  %tuning limits relative to the locked VCO frequency
+			    nl_fmax_off=transient_nl_fvco_max_Hz-Fvco;
+
+			    % Loop filter states (deviation from the locked tuning voltage):
+			    % x=[V(C1) at charge pump node; V(C2); V(C3) at VCO tuning input]
+			    nl_Ac=[-(1/R2+1/R3)/C1   1/(R2*C1)   1/(R3*C1);
+				    1/(R2*C2)        -1/(R2*C2)   0;
+				    1/(R3*C3)         0          -1/(R3*C3)];
+			    nl_Bc=[1/C1; 0; 0];
+			    nl_M=expm([nl_Ac nl_Bc; zeros(1,4)]*nl_dt);
+			    nl_Ad=nl_M(1:3,1:3);
+			    nl_Bd=nl_M(1:3,4);
+
+			    % Start with all capacitors charged so the VCO sits transient_delta_f_Hz
+			    % away from the target, reference and divider phases aligned.
+			    nl_x=(transient_delta_f_Hz/Kvco_Hz_volt)*[1;1;1];
+			    nl_div_ph=0;  %divider output phase (cycles); reference phase is Fref_Hz*t
+			    nl_div_next=1;  %next divider edge (integer divider phase)
+			    nl_up=0; nl_dn=0;  %PFD state
+			    nl_slips=0;
+
+			    nl_t_s=(0:nl_nsteps)'*nl_dt;
+			    nl_foff_Hz=zeros(nl_nsteps+1,1);
+			    nl_div_ph_rec=zeros(nl_nsteps+1,1);
+			    nl_vtune_V=zeros(nl_nsteps+1,1);
+			    nl_foff_Hz(1)=Kvco_Hz_volt*nl_x(3);
+			    nl_vtune_V(1)=nl_x(3);
+
+			    for nl_k=1:nl_nsteps
+				    nl_fo=Kvco_Hz_volt*nl_x(3);
+				    if nl_fo>nl_fmax_off
+					    nl_fo=nl_fmax_off;
+				    elseif nl_fo<nl_fmin_off
+					    nl_fo=nl_fmin_off;
+				    end
+				    nl_div_end=nl_div_ph+(Fref_Hz+nl_fo/N)*nl_dt;
+				    nl_ref_edge=(mod(nl_k,transient_nl_steps_per_ref)==0);  %reference edges fall exactly on step ends
+
+				    if (~nl_ref_edge && nl_div_end<nl_div_next)  %no edges in this step (most steps)
+					    nl_net=nl_up-nl_dn;
+				    else
+					    % edges inside this step, as fractions of the step (type +1=ref, -1=div)
+					    nl_ev_frac=[]; nl_ev_type=[];
+					    while nl_div_end>=nl_div_next
+						    nl_ev_frac(end+1)=(nl_div_next-nl_div_ph)/(nl_div_end-nl_div_ph);
+						    nl_ev_type(end+1)=-1;
+						    nl_div_next=nl_div_next+1;
+					    end
+					    if nl_ref_edge
+						    nl_ev_frac(end+1)=1;
+						    nl_ev_type(end+1)=1;
+					    end
+					    [nl_ev_frac,nl_idx]=sort(nl_ev_frac);
+					    nl_ev_type=nl_ev_type(nl_idx);
+					    nl_net=0; nl_seg_start=0;
+					    for nl_e=1:length(nl_ev_frac)
+						    nl_net=nl_net+(nl_up-nl_dn)*(nl_ev_frac(nl_e)-nl_seg_start);
+						    nl_seg_start=nl_ev_frac(nl_e);
+						    if nl_ev_type(nl_e)==1  %reference edge
+							    if nl_dn==1
+								    nl_dn=0;  %both high -> reset
+							    else
+								    if nl_up==1
+									    nl_slips=nl_slips+1;  %second ref edge before a divider edge
+								    end
+								    nl_up=1;
+							    end
+						    else  %divider edge
+							    if nl_up==1
+								    nl_up=0;
+							    else
+								    if nl_dn==1
+									    nl_slips=nl_slips+1;
+								    end
+								    nl_dn=1;
+							    end
+						    end
+					    end
+					    nl_net=nl_net+(nl_up-nl_dn)*(1-nl_seg_start);
+				    end
+
+				    nl_x=nl_Ad*nl_x+nl_Bd*(nl_Icp_A*nl_net);
+				    nl_div_ph=nl_div_end;
+
+				    nl_foff_Hz(nl_k+1)=Kvco_Hz_volt*nl_x(3);
+				    nl_div_ph_rec(nl_k+1)=nl_div_ph;
+				    nl_vtune_V(nl_k+1)=nl_x(3);
+			    end
+
+			    nl_foff_Hz=min(max(nl_foff_Hz,nl_fmin_off),nl_fmax_off);
+			    nl_phase_err_cyc=nl_div_ph_rec-nl_t_s*Fref_Hz;
+
+			    nl_freq_Hz=Fvco+nl_foff_Hz;
+			    nl_outside=find(abs(nl_foff_Hz)>transient_ftol_Hz);
+			    if isempty(nl_outside)
+				    nl_lock_time_s=0;
+			    elseif nl_outside(end)<length(nl_t_s)
+				    nl_lock_time_s=nl_t_s(nl_outside(end)+1);
+			    else
+				    nl_lock_time_s=NaN;
+			    end
+
+			    if isnan(nl_lock_time_s)
+				    disp('Nonlinear transient did not settle within the requested time span');
+			    else
+				    fprintf('Estimated nonlinear settling time: %.6g s (within +/- %.6g Hz)\n',nl_lock_time_s,transient_ftol_Hz);
+			    end
+			    fprintf('Nonlinear transient cycle slips: %d\n',nl_slips);
+
+			    fignum=fignum+1;
+			    figure(fignum);
+			    subplot(2,1,1);
+			    if bDoTransient==1  %overlay the small-signal result for comparison
+				    plot(nl_t_s*1e3,nl_freq_Hz,transient_t_s*1e3,Fvco+(transient_freq_Hz-fout_desired_Hz),nl_t_s*1e3,(Fvco+transient_ftol_Hz)*ones(size(nl_t_s)),nl_t_s*1e3,(Fvco-transient_ftol_Hz)*ones(size(nl_t_s)));
+				    leg1=legend('nonlinear','small-signal','upper tolerance','lower tolerance');
+			    else
+				    plot(nl_t_s*1e3,nl_freq_Hz,nl_t_s*1e3,(Fvco+transient_ftol_Hz)*ones(size(nl_t_s)),nl_t_s*1e3,(Fvco-transient_ftol_Hz)*ones(size(nl_t_s)));
+				    leg1=legend('nonlinear','upper tolerance','lower tolerance');
+			    end
+			    set(leg1,'Interpreter','none');
+			    grid on;
+			    xlabel('time (ms)');
+			    ylabel('VCO frequency (Hz)');
+			    title(sprintf('PLL Nonlinear Frequency-Step Response (%d cycle slips)',nl_slips));
+			    subplot(2,1,2);
+			    plot(nl_t_s*1e3,nl_phase_err_cyc);
+			    grid on;
+			    xlabel('time (ms)');
+			    ylabel('phase error at PFD (cycles)');
+			    if bSaveFigs==1
+				    if bSaveFigsPDF
+					    print(fignum,strcat(FigSave_file_basename,'_transient_nl.pdf'));
+				    end
+				    if bSaveFigsJPG
+					    print(fignum,strcat(FigSave_file_basename,'_transient_nl.jpg'));
+				    end
+			    end
+		    end
 
 		    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
 		    %%NOTE: Assume TCXO = reference into PLL
@@ -435,4 +727,3 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    end
 			    fclose(fid);
 		    end
-

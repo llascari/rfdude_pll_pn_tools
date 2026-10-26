@@ -1,4 +1,47 @@
 basic pll/synth implementation of old mathcad worksheets
 
-coming someday
+Optional small-signal transient analysis is available in rfdude_pll_oct_0p1.m.
+Set pll_inputs_s.bDoTransient=1 to enable it. Configure transient_delta_f_Hz
+(starting VCO frequency offset from the target), transient_tmax_s,
+transient_points, and transient_ftol_Hz in aa_RunPllDesign_XXXX.m.
+
+The time-domain state-space calculation estimates frequency settling after a
+small frequency step. It includes a first-order Pade approximation of the
+phase-detector half-reference-period delay, but does not model PFD/charge-pump
+saturation, cycle slips, VCO tuning limits, or nonlinear acquisition. Treat
+the result as a settling estimate, not a guaranteed lock time. Its reported
+settling time is measured on the requested sample grid; increase
+transient_points if finer time resolution is needed. The historical Mathcad
+worksheet PDF documents the earlier pole/residue method and its limitations.
+
+Optional nonlinear (large-signal) transient analysis is also available. Set
+pll_inputs_s.bDoTransientNonlinear=1 to enable it; it is independent of
+bDoTransient and reuses transient_delta_f_Hz, transient_tmax_s and
+transient_ftol_Hz. Additional settings: transient_nl_steps_per_ref (time
+steps per reference period, >=10, default 100) and transient_nl_fvco_min_Hz /
+transient_nl_fvco_max_Hz (absolute VCO tuning range, -Inf/Inf = unlimited).
+It simulates a tri-state PFD and charge pump driven by reference/divider edge
+timing, the actual C1/R2/C2/R3/C3 loop filter, and the VCO phase, so it shows
+PFD saturation, cycle slips (counted and reported), reference-rate ripple on
+the tuning voltage, and VCO tuning-range limits. The filter is advanced exactly
+(matrix exponential) each step and the charge-pump current is averaged over
+the PFD pulse widths within a step, so charge is conserved. Not modeled: PFD
+reset delay/dead zone, charge-pump mismatch, leakage or compliance limits,
+divider/VCO noise. When bDoTransient=1 as well, the small-signal response is
+overlaid for comparison. The settling time uses the instantaneous VCO
+frequency, which includes reference-rate ripple, so it can be somewhat longer
+than the small-signal estimate even for small steps.
+
+References:
+- Dean Banerjee, PLL Performance, Simulation, and Design, cited by the
+  historical Mathcad worksheet for its transient-analysis method.
+- Roland E. Best, Phase-Locked Loops: Design, Simulation, and Applications,
+  6th ed., McGraw-Hill, 2014.
+- Floyd M. Gardner, Phaselock Techniques, 3rd ed., Wiley, 2005.
+- Floyd M. Gardner, "Charge-Pump Phase-Lock Loops," IEEE Transactions on
+  Communications, vol. COM-28, no. 11, pp. 1849-1858, Nov. 1980.
+- Michael H. Perrott, "Fast and Accurate Behavioral Simulation of Fractional-N
+  Frequency Synthesizers and other PLL/DLL Circuits," Proc. Design Automation
+  Conference (DAC), 2002.
+
 20250922 Lance Lascari

@@ -24,6 +24,14 @@ Make the specific change requested and preserve everything around it. Treat the 
 
 When working with MATLAB or Octave tools, favor clear, traceable code that helps a person follow and modify the signal flow or analysis. The code may serve as a testbench or learning aid; compactness and optimization are not goals unless specifically requested. Preserve the established script/function organization and expose meaningful steps and parameters in the same way nearby code does.
 
+## Historical PLL Reference
+
+For PLL design or analysis work, consult the original Mathcad worksheet PDF at `pll_synth/Mathcad - RFdude_pll38_PDFversion.pdf` when it is relevant to the request. Use it to understand the original analysis, assumptions, and intended calculations; preserve that traceability in the MATLAB/Octave implementation. Treat it as a historical reference, not as a blanket instruction to reproduce every feature or assume its calculations are error-free. Keep changes within the requested scope and clearly identify any intentional differences from the worksheet.
+
 ## Broader or Ambiguous Changes
 
 If a request appears to require changing established structure, public behavior, or user-facing form beyond the explicitly requested scope, pause and ask before doing so. When multiple implementations would noticeably alter how the existing tool is organized or used, describe the choice briefly and get direction first.
+
+## Session Continuity
+
+When resuming work, read `DEVELOPMENT_HANDOFF.md` first. Update it at the end of a session with the checkpoint, what changed, what was validated, and next steps.

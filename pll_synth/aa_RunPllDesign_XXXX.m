@@ -66,6 +66,15 @@ pll_inputs_s.RR3=1;
 pll_inputs_s.bSaveFigs=1; %% this one needs to be enabled before the next two are evaluated
 pll_inputs_s.bSaveFigsPDF=0;
 pll_inputs_s.bSaveFigsJPG=1;
+pll_inputs_s.bDoTransient=1; %% optional small-signal frequency-step response
+pll_inputs_s.transient_delta_f_Hz=500e3; %% initial VCO frequency is fout_desired_Hz + this offset
+pll_inputs_s.transient_tmax_s=15e-3;
+pll_inputs_s.transient_points=12501;
+pll_inputs_s.transient_ftol_Hz=1e3; %% frequency settling tolerance
+pll_inputs_s.bDoTransientNonlinear=1; %% optional nonlinear PFD/charge-pump step response (cycle slips); uses the transient_* settings above
+pll_inputs_s.transient_nl_steps_per_ref=100; %% simulation steps per reference period (>=10)
+pll_inputs_s.transient_nl_fvco_min_Hz=-Inf; %% VCO tuning range limits (absolute VCO freq), -Inf/Inf = unlimited
+pll_inputs_s.transient_nl_fvco_max_Hz=Inf;
 pll_inputs_s.pn_ylimits=[-200,0];
 pll_inputs_s.bWriteCSVtable=1;
 
