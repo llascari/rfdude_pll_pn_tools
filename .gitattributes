@@ -1,0 +1,2 @@
+# GitHub language statistics: .m files are GNU Octave / MATLAB (not MUMPS or Objective-C)
+*.m linguist-language=MATLAB
