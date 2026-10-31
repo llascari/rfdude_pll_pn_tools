@@ -116,13 +116,18 @@ for source={'TCXO','VCO'}
     if ~p.(['bUse' kind 'FromFile'])
         continue;
     end
-    filename=p.(['File' kind]);
-    if ~is_absolute(filename)
-        filename=fullfile(base_directory,filename);
-    end
-    data=load(filename,'pn_struct');
-    if ~isfield(data,'pn_struct')
-        error('%s file must contain pn_struct',kind);
+    if strcmp(kind,'VCO') && isfield(o,'vco_profile_s')
+        [data.pn_struct,~]=select_pn_profile(o.vco_profile_s, ...
+            p.fout_desired_Hz/p.mult,'interpolate');
+    else
+        filename=p.(['File' kind]);
+        if ~is_absolute(filename)
+            filename=fullfile(base_directory,filename);
+        end
+        data=load(filename,'pn_struct');
+        if ~isfield(data,'pn_struct')
+            error('%s file must contain pn_struct',kind);
+        end
     end
     s=data.pn_struct;
     required={'f','n','fc'};
@@ -143,6 +148,9 @@ for source={'TCXO','VCO'}
     if strcmp(kind,'VCO')
         validateattributes(s.kvco,{'numeric'},{'scalar','real','finite','positive'});
     end
+end
+if isfield(o,'vco_profile_s') && ~p.bUseVCOFromFile
+    error('vco_profile_s requires bUseVCOFromFile=1; otherwise the profile would be ignored.');
 end
 end
 

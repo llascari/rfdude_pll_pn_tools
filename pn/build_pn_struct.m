@@ -1,7 +1,7 @@
 % build_pn_struct.m
 %
 % arguments are used to return a properly formatted phase noise structure
-% structure is documented in "pnformat.txt".
+% structure is documented in "pnformat.md".
 %% 20251018LL
 %Copyright 2025 Lance Lascari / RFdude.com LLC       %
 

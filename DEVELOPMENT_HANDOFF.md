@@ -1,6 +1,6 @@
 # Development handoff
 
-Updated: 2026-10-31, end-of-session checkpoint for continued user testing.
+Updated: 2026-10-31, shipped ROS datasheet-to-fixed-filter PLL demonstration.
 
 ## Current objective
 
@@ -8,12 +8,16 @@ Port the 2002 Mathcad PLL worksheet
 (`pll_synth/Mathcad - RFdude_pll38_PDFversion.pdf`) to Octave-first,
 MATLAB-compatible code in `pll_synth/`, adding features through small,
 targeted changes that preserve the existing form and style (see `AGENTS.md`).
+Current follow-up: the reusable ROS datasheet extraction/profile example and
+root `demo_2026.m`, demonstrating a 5 kHz center design followed by a
+five-carrier sweep with fixed components and frequency-selected ROS noise/Kvco.
 
 ## Repository checkpoint
 
-- Branch `main`; October 31 tooling is being committed as
-  "Add Octave-first PLL configurator and reloadable analysis viewer",
-  following `d6d872a` (October 26 transient implementation).
+- Branch `main`, current HEAD `92ac270` ("awesome progress"), following
+  `27c6ff3` ("generated test example") and `ff77c15`
+  ("Add Octave-first PLL configurator and reloadable analysis viewer").
+  The new PN-profile/example work below remains local and uncommitted.
 - The October 26 work below was committed in `d6d872a`. The worktree was clean
   at the start of the October 31 review.
 - October 31 commit scope: this handoff,
@@ -248,12 +252,78 @@ aggregate plot.
 
 ## Continue here
 
-Checkpoint: October 31, 2026. The user paused after the viewer camera presets,
-aggregate-view selection behavior, published-archive inspection, and
-preliminary license research. Fixed camera buttons and selection behavior
-passed `test_pll_run_tools()` in Octave 11.3.0 and MATLAB R2025a Update 1.
-Earlier in this session, the dataset-picker change also passed both suites
-and opened the existing `_rfd_pll_Design_XXXX_data.mat` dataset successfully.
+Checkpoint: October 31, 2026. After the viewer camera presets, aggregate-view
+selection behavior, published-archive inspection, and preliminary license
+research, the user requested preservation and documentation of the `pn_struct`
+format across repositories and over time. `pn/pnformat.md` is now the
+canonical legacy-format specification and moving-forward guide;
+`pn/pnformat.txt` remains as a compatibility pointer. The user approved a
+separate version 1 `pn_profile_s` wrapper containing ordinary legacy points,
+with exact selection and explicit interpolation, rejecting extrapolation.
+Historical PLL loaders and GUI/file-only callers still use the exported
+`pn_struct`. The programmatic runner now offers explicit opt-in profile
+selection; see the completed demonstration checkpoint below.
+
+`pn/ros2100_extraction_example.md` is the complete use case and reusable LLM
+request. `pn/aa_generate_ros2100_example.m` contains the explicit extraction
+rows: 20 nominal band-characterization points with four noise offsets each,
+plus the separate 20-offset trace at 1725 MHz. The latter's Kvco is explicitly
+derived between the neighboring 1666.4 and 1727 MHz rows, not measured.
+`pn/validate_pn_profile.m` and `pn/select_pn_profile.m` implement the approved
+contract: potentially different offset grids, log-offset interpolation in
+dBc/Hz, then linear-power carrier interpolation and linear Kvco interpolation.
+Conditions, source rows and derivation remain in point comments.
+
+Fresh validation passed in Octave 11.3.0 and MATLAB R2025a Update 1:
+
+```sh
+octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath('pn'); test_pn_profile();"
+matlab -batch "addpath('pn'); test_pn_profile();"
+```
+
+The tests isolate generated fixtures and cover scalar fields, carriers/gains,
+detailed noise values, derived gain, overwrite protection, legacy MAT loading,
+existing add/multiply consumers, exact selection, different offset grids,
+interpolation policy, rejected extrapolation and invalid input. Independent
+comparison against the local PDF text matched all 140 band-table entries and
+40 detailed-table entries, with a disputed 1403.0 MHz value checked visually
+at higher magnification. A MATLAB-only initialization issue was corrected
+before the final passing tests. Optional plotting and an actual PLL run were
+not exercised; Octave's QSocketNotifier startup message remains.
+
+The generator was also run normally in Octave, producing ignored local
+`pn/datfiles_local/ROS_2100_119_profile.mat`. MATLAB loaded that file and
+selected/exported 1800 MHz; Octave reopened that MATLAB v7 legacy export.
+The temporary round-trip export was removed; the normal profile output remains.
+The source PDFs remain in `~/Downloads`, not in the repository. Generated
+data do not require those PDFs to load or regenerate from the script.
+
+Plot/rerun follow-up: `plot_pn_array.m` now sets legend Interpreter to none,
+matching neighboring plot tools. The ROS generator uses display-only carrier
+labels in two columns, with saved point names unchanged. Repeated execution
+replaces only its tagged plot; other figures remain untouched. Preserve the
+user's enabled `bSaveData`, `bOverwriteData` and `bPlotData` settings. The
+test suite normalizes settings only in its isolated generator copy. The full
+focused profile tests and two plotting/saving runs in isolated folders passed
+in Octave and MATLAB; all 21 entries and unrelated figures were checked, and
+an Octave-rendered legend was visually inspected. No local MAT was overwritten
+during these follow-up checks.
+
+Tuning-plot follow-up: `bPlotData` also creates a separate tuning-sensitivity
+versus carrier-frequency figure (MHz/V versus MHz), connecting the 20
+tabulated values and marking the derived 1725 MHz gain separately. Its tagged
+figure follows the same rerun replacement policy. Focused isolated checks
+passed in Octave and MATLAB for exact plotted coordinates, derived marker,
+replacement of both plots and preservation of an unrelated figure.
+
+Google Search AI Overview selected a 122.88 MHz CVHD-950 variant, whereas
+the supplied datasheet's noise table is specified at 100 MHz. Google AI Mode
+returned an LMX2594 answer with unverifiable graph/trace claims and a wrong
+Figure 16 page citation. Correction to the earlier handoff: local Figure 16
+is on printed/PDF page 16, not page 14; Figure 7 is on page 14. Treat AI output
+only as a lead to check against the PDF, not extracted data.
+Earlier viewer changes passed `test_pll_run_tools()` in Octave 11.3.0 and
+MATLAB R2025a Update 1.
 
 Worktree changes are local and uncommitted; do not commit or push without
 authorization. `pll_synth/aa_run_user_config_XXXX_design_TEST.m` contains a
@@ -261,14 +331,18 @@ local five-value bandwidth sweep (`[500 1000 2000 5000 10000]`) and updated
 overwrite comments. Preserve that user edit. Earlier ignored setup state and
 generated results remain machine-local.
 
-Next: resume interactive GUI testing as useful, then ask the user to decide
-whether to pursue open-source release and which license to use. No license
-file or GitHub feature settings have been changed. Before applying a license,
-resolve provenance/distribution rights for the historical PDF/worksheet,
-shipped measurement traces, and code developed for paid work. Retain all
-Copilot-origin notes/headers and project/tooling documentation, especially
-Octave/MATLAB compatibility guidance. The published ZIP inspection and
-preliminary MIT/BSD-3-Clause/Apache-2.0 comparison are documented above.
+Next: review the ROS example and its deliberate distinction between typical
+characterization and the specified 1350-2100 MHz band. Apply the same extraction
+workflow to CVHD-950 or LMX2594 if requested. Use the new opt-in programmatic
+profile input when frequency-dependent characterization is wanted; do not
+silently change existing file-input behavior. Resume GUI testing as useful.
+Ask the user whether to pursue open-source release and which license to use;
+no license file or GitHub feature settings have changed. Before applying a
+license, resolve provenance/distribution rights for the historical
+PDF/worksheet, shipped measurement traces, and code developed for paid work.
+Retain all Copilot-origin notes/headers and project/tooling documentation,
+especially Octave/MATLAB compatibility guidance. The published ZIP inspection
+and preliminary MIT/BSD-3-Clause/Apache-2.0 comparison are documented above.
 
 Other optional next steps (not requested):
 
@@ -279,6 +353,85 @@ Other optional next steps (not requested):
    estimate, cascaded synthesizers, optional loop amplifier).
 3. Optionally write transient results (settling time, slips) into the CSV
    report or `pn_struct` output; currently they are printed and plotted only.
+
+## October 31: shipped ROS fixed-filter PLL demonstration
+
+Implemented the user-approved five-carrier demonstration, retaining explicit
+human-readable settings, units, derivations and Copilot-under-direction credit:
+
+- Root `demo_2026.m` prints source/extraction notes, regenerates the ROS profile
+  in its own output directory, shows both source plots, and pauses for a
+  command-window keypress. Set `demo_pause_for_key=0` for unattended runs.
+- `pll_synth/aa_demo_ROS_based_synthesizer_runPLL.m` designs all components
+  at 1725 MHz for 5 kHz bandwidth and 55-degree phase margin, without full or
+  third-pole overrides. It copies the exact center components into a full
+  override for 1350/1537.5/1725/1912.5/2100 MHz. Noise/Kvco vary per carrier;
+  the loop is not redesigned at each point. The center uses the detailed
+  stored noise curve and its explicitly derived gain; four band points are
+  modeled from neighboring characterization.
+- `rfdude_pll_run.m` adds opt-in `run_options_s.vco_profile_s`, requiring VCO
+  file mode and selecting at `fout_desired_Hz/mult`. Each case saves its
+  selected scalar as `<case_basename>_vco.mat`; results embed unextended
+  `vco_characterization` and `vco_selection_s`. The saved configuration
+  embeds the full profile and `center_design_s` inputs/components/metrics.
+  The existing core and GUI/file-only behavior are unchanged.
+- The viewer now displays nested scalar settings recursively and summarizes
+  profile-point arrays rather than dumping every curve. Per-case details
+  include source/derivation and selection evidence. This fixes structured
+  settings preventing viewer creation and saved-data reopening.
+- The generator's optional `ros_example_options_s` accepts four output/plot
+  switches only. The demo uses it without editing source rows or replacing
+  the normal local ROS MAT. Root and standalone scripts keep unrelated plots.
+- README, PLL usage, PN format and worked-example docs describe the complete
+  workflow. The Mathcad filter-synthesis/PFD-delay reference was consulted;
+  no core synthesis/transient equations were changed for this demonstration.
+
+Fresh numerical demo results agree in Octave 11.3.0 and MATLAB R2025a Update 1:
+center achieved **5027.83594 Hz**, **54.893859 degrees** (nearest log-grid
+crossover, within one grid step of the 5 kHz target). The five achieved
+bandwidths are **7037.22924, 5703.46556, 5027.83594, 4074.9119, 3036.33859 Hz**.
+Tests verify five distinct selected gains and identical exact components.
+
+Reproducible validation from the repository root:
+
+```sh
+octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath(fullfile(pwd,'pll_synth'),fullfile(pwd,'pn')); test_demo_2026(); test_demo_2026(true); test_pll_run_tools(); test_pn_profile();"
+matlab -batch "addpath(fullfile(pwd,'pll_synth'),fullfile(pwd,'pn')); test_demo_2026(); test_demo_2026(true); test_pll_run_tools(); test_pn_profile();"
+```
+
+Both commands freshly passed after the final script/viewer changes.
+
+`test_demo_2026()` isolates copied scripts with shortened transients and
+exports off, testing reruns, standalone in-memory generation, source-plot and
+unrelated-figure preservation. `test_demo_2026(true)` retains all default PLL
+settings, including 15 ms transients, 12501 small-signal samples, 100 nonlinear
+steps/PFD, and verifies six JPEGs plus a CSV per carrier. Both check source
+noise/gain and saved scalar equality, center target/grid resolution, exact
+fixed components, viewer structured evidence/modes and saved-data reopening.
+Existing PLL and PN-profile suites check unchanged legacy behavior.
+
+All test output/state is temporary and cleaned up; no local measurements or
+normal ROS output were overwritten. Demo outputs regenerate offline in ignored
+`pll_synth/_demo_2026/`; the profile, center and sweep data are not committed.
+Reopen from the root with:
+
+```matlab
+addpath('pll_synth');
+cc_pll_data_viewer('pll_synth/_demo_2026/_ROS_based_synthesizer_data.mat');
+```
+
+Coverage limits: automated tests disable the physical keypress and hide their
+windows. Physical pause/mouse interaction remains manual. The default
+10 Hz-200 MHz analysis and 100 Hz-1 MHz integration preserve historical
+endpoint holding outside the ROS 1 kHz-1 MHz noise evidence; comments and
+printed notices identify that assumption. These are offline typical-data
+models, not hardware lock/noise guarantees. Existing residual-FM,
+MATLAB complex-plot and Octave startup warnings remain visible.
+
+Everything in this follow-up is local and uncommitted/unpushed. No new commit,
+push, public-release/license decision or GitHub settings change was authorized.
+Next: run the interactive root demonstration, tweak its exposed settings as
+desired, and address the separate release/license decision only if requested.
 
 ## Portability and cautions
 
@@ -295,8 +448,10 @@ Other optional next steps (not requested):
 
 ## Synchronization
 
-The user authorized an end-of-session commit and push to `origin/main`.
-Verify push success in the Git result; a local commit alone is not shared.
-On another computer, fetch/pull `main` to receive the tooling and this handoff;
-copy local state/data separately if wanted. Chat history does not transfer;
-this file and `AGENTS.md` are the restart point.
+The earlier configurator scope was authorized for commit/push to `origin/main`
+and is recorded above; that is not authorization to commit/push this follow-up.
+The PN-profile and ROS demonstration changes remain local until explicitly
+authorized and committed/pushed. A local commit alone is not shared.
+On another computer, fetch/pull only published changes and copy ignored local
+state/data separately if wanted. Chat history does not transfer; this file
+and `AGENTS.md` are the restart point.

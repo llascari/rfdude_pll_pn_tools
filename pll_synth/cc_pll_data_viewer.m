@@ -451,6 +451,10 @@ if strcmp(c.status,'complete')
     for j=1:numel(c.noise_offsets_Hz)
         lines{end+1}=sprintf('%.9g Hz: %.9g dBc/Hz',c.noise_offsets_Hz(j),c.noise_at_offsets_dBc_Hz(j));
     end
+    if isfield(c,'vco_characterization')
+        lines=[lines {'' 'Selected VCO characterization:',c.vco_characterization.comment, ...
+            'VCO profile selection:'} struct_lines(c.vco_selection_s)];
+    end
 end
 lines=[lines {'' 'Requested inputs:'} struct_lines(c.requested_inputs) ...
     {'' 'Metric / run settings:'} struct_lines(data.config_s.run_options_s)];
@@ -458,12 +462,17 @@ end
 
 function lines=struct_lines(s)
 names=fieldnames(s);
-lines=cell(1,numel(names));
+lines={};
 for k=1:numel(names)
     value=s.(names{k});
-    if ~ischar(value)
+    if isstruct(value) && isscalar(value)
+        lines=[lines {[names{k} ':']} strcat('  ',struct_lines(value))];
+        continue;
+    elseif isstruct(value)
+        value=sprintf('%d-point structure array (stored in dataset)',numel(value));
+    elseif ~ischar(value)
         value=mat2str(value,9);
     end
-    lines{k}=[names{k} ' = ' value];
+    lines{end+1}=[names{k} ' = ' value];
 end
 end

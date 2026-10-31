@@ -9,6 +9,25 @@ when they do not slow development; MATLAB use is authorized on this computer.
 Use focused/parallel checks and record deferred coverage rather than blocking
 Octave progress.
 
+Shipped datasheet-to-PLL demonstration, from the repository root in a
+graphical Octave/MATLAB command window:
+    demo_2026
+It prints ROS-2100-119+ datasheet provenance, regenerates phase-noise/Kvco
+plots from shipped rows, and pauses for a keypress in the command window.
+aa_demo_ROS_based_synthesizer_runPLL.m then synthesizes ALL components for
+5 kHz BW / 55 degree PM at 1725 MHz and freezes C1/C2/R2/C3/R3 while analyzing
+1350, 1537.5, 1725, 1912.5 and 2100 MHz. Achieved BW/PM change across the band.
+Default chip/reference settings, both transients and JPEG/CSV exports remain
+visible and editable in that Copilot-credited script. No local data/PDF or
+external LLM is required. Source evidence and reusable extraction instructions:
+    ../pn/ros2100_extraction_example.md
+Demo outputs live in ignored _demo_2026/, and reruns overwrite only their own
+files without closing unrelated source plots. Reopen the aggregate dataset:
+    cc_pll_data_viewer('_demo_2026/_ROS_based_synthesizer_data.mat')
+The default 10 Hz-200 MHz analysis grid and 100 Hz-1 MHz integration retain
+historical endpoint holding outside the ROS 1 kHz-1 MHz noise evidence.
+These extensions are modeling assumptions, not extracted measurements.
+
 From pll_synth/ in the Octave GUI command window:
     bb_pll_setup_gui
 
@@ -20,7 +39,21 @@ Disabled manual fields retain their values. Reference file mode replaces
 reference noise only (F_tcxo_Hz is still used); VCO file mode replaces noise
 and Kvco, not the requested output frequency. Noise MAT files must contain
 pn_struct with increasing row-vector f and matching row-vector n; see
-../pn/pnformat.txt. The original endpoint extension behavior is retained.
+../pn/pnformat.md (the old pnformat.txt name remains as a pointer). The
+original endpoint extension behavior is retained.
+
+Opt-in programmatic profile input (demonstrated in the shipped ROS script):
+    run_options_s.vco_profile_s=pn_profile_s;
+    pll_inputs_s.bUseVCOFromFile=1;
+rfdude_pll_run selects at fout_desired_Hz/mult for every case, using explicit
+profile interpolation with no carrier extrapolation. FileVCO is replaced by
+a case-local <case_basename>_vco.mat containing the selected scalar pn_struct.
+The dataset embeds the original profile, vco_characterization (unextended),
+vco_selection_s and the existing core's source_noise.VCO (endpoint-extended).
+The demo also embeds center_design_s inputs/components/achieved BW/PM/Kvco.
+Viewer details summarize structured options and show source/selection notes;
+full profile points remain saved. File-only callers and the GUI are unchanged:
+loading a MAT containing pn_profile_s does not implicitly enable selection.
 
 The final controls are "Run the script" and "Enable data viewer after run".
 Run is initially unchecked. Generate the script, then either keep editing,
@@ -106,6 +139,16 @@ Focused offline regression, from the repository root (Qt/display required):
     octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath('pll_synth'); test_pll_run_tools();"
     matlab -batch "addpath('pll_synth'); test_pll_run_tools();"
 Tests use temporary outputs/state, not local measurement data or hardware.
+
+Demo integration regression, from the repository root:
+    octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath('pll_synth'); test_demo_2026();"
+    matlab -batch "addpath('pll_synth'); test_demo_2026();"
+Tests run copied scripts with pause disabled, short transients and exports
+off; they check center synthesis, exact fixed components, selected ROS
+noise/gain, both transient outputs, source-plot reruns and viewer reopening.
+Use test_demo_2026(true) to retain default PLL/transient/export settings and
+verify all six JPEGs and a CSV per carrier. Tests hide their windows; physical
+keypress interaction and mouse dragging remain manual checks.
 
 Optional small-signal transient analysis is available in rfdude_pll_oct_0p1.m.
 Set pll_inputs_s.bDoTransient=1 to enable it. Configure transient_delta_f_Hz

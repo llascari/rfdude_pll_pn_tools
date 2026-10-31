@@ -18,7 +18,8 @@ function [fig]=plot_pn_array(ar_pn_struct)
 	end
 	grid on;
 	axis tight;
-	legend('show')
+	leg1=legend('show');
+	set(leg1,'Interpreter', 'none')
 	hold off
 
 end

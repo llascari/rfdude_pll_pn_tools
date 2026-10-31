@@ -6,10 +6,10 @@ if ~isfield(run_options_s,'base_directory')
     run_options_s.base_directory=tool_directory;
 end
 config_s=struct('pll_inputs_s',pll_inputs_s,'run_options_s',run_options_s);
-rfdude_pll_validate_configuration(config_s,run_options_s.base_directory);
 path_before=path;
 cleanup_path=onCleanup(@() path(path_before));
 addpath(tool_directory,fullfile(tool_directory,'..','pn'));
+rfdude_pll_validate_configuration(config_s,run_options_s.base_directory);
 [directory,basename,~]=fileparts(pll_inputs_s.def_filename);
 if isempty(directory) || ~is_absolute(directory)
     directory=fullfile(run_options_s.base_directory,directory);
@@ -86,6 +86,14 @@ if ~options.bShowCorePlots
     set(0,'defaultfigurevisible','off');
 end
 pll_inputs_s=requested;
+if isfield(options,'vco_profile_s')
+    [pn_struct,vco_selection_s]=select_pn_profile(options.vco_profile_s, ...
+        requested.fout_desired_Hz/requested.mult,'interpolate');
+    vco_characterization=pn_struct;
+    [~,case_basename]=fileparts(output_name);
+    pll_inputs_s.FileVCO=fullfile(output_directory,[case_basename '_vco.mat']);
+    save(pll_inputs_s.FileVCO,'pn_struct','-v7');
+end
 for source={'TCXO','VCO'}
     name=['File' source{1}];
     filename=pll_inputs_s.(name);
@@ -116,6 +124,10 @@ result.effective_inputs.Kvco_Hz_volt=Kvco_Hz_volt;
 result.source_noise=struct();
 if requested.bUseVCOFromFile
     result.source_noise.VCO=pn_struct_vco;
+    if isfield(options,'vco_profile_s')
+        result.vco_selection_s=vco_selection_s;
+        result.vco_characterization=vco_characterization;
+    end
 end
 if requested.bUseTCXOFromFile
     result.source_noise.TCXO=pn_struct_tcxo;

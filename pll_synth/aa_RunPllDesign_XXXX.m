@@ -8,7 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %NOTE:  Please read:
-%-when the "bUseVCO/TCXOFromFile" flags are set, all characteristics of the source/pn_struct will override local settings (see pnformat.txt -fc, noise, kvco)
+%-when the "bUseVCO/TCXOFromFile" flags are set, all characteristics of the source/pn_struct will override local settings (see ../pn/pnformat.md -fc, noise, kvco)
 % --->when the flag is not set, then the manually entered params will be used
 %
 %
