@@ -1,4 +1,4 @@
-# rfdude_tools
+# rfdude_pll_pn_tools
 Lance Lascari's personally developed RF/PLL/phase-noise tools, free under the [MIT License](LICENSE)
 Reorganized 2025
 
