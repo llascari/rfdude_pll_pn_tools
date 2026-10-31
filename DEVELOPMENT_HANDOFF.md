@@ -259,12 +259,17 @@ Mathcad PDF contains the author's historical public email addresses. One old
 commit's author email is `llascari@rfdude54.localdomain` (hostname only);
 history rewrite was not recommended.
 
-Remaining, each requiring explicit authorization: commit/push the license
-files; disable Issues, Wiki, Projects and pull requests (if offered) and update
-the GitHub description (still "available to colleagues and employers..."); make
-the repository public last, since its full history becomes permanently
-copyable. Optionally replace or redirect the old rfdude.com ZIP, whose
-`rights.txt` still says the tools are not open source.
+Remaining, each requiring explicit authorization: make the repository public
+last, since its full history becomes permanently copyable. Optionally replace
+or redirect the old rfdude.com ZIP, whose `rights.txt` still says the tools
+are not open source.
+
+Done 2026-10-31 with authorization: license commit `c1b0c95` pushed to
+`origin/main`. GitHub Issues, Wiki, Projects, Discussions and pull requests
+were disabled (`gh repo edit ...=false`; pull requests via
+`gh api -X PATCH repos/llascari/rfdude_tools -F has_pull_requests=false`),
+and the description updated to the MIT/as-is/fork-freely wording. Read-back
+confirmed all features false; visibility remains **private**.
 
 ## October 31 follow-up: selection behavior in aggregate plots
 
@@ -363,11 +368,11 @@ characterization and the specified 1350-2100 MHz band. Apply the same extraction
 workflow to CVHD-950 or LMX2594 if requested. Use the new opt-in programmatic
 profile input when frequency-dependent characterization is wanted; do not
 silently change existing file-input behavior. Resume GUI testing as useful.
-Public release: MIT was approved and the license files are in place locally
-(see the release section above). Remaining release steps need explicit
-authorization: commit/push, GitHub feature settings/description, then public
-visibility. Retain all Copilot-origin notes/headers and project/tooling
-documentation, especially Octave/MATLAB compatibility guidance.
+Public release: MIT license committed/pushed and GitHub contribution features
+disabled (see the release section above). Remaining: the user's final review,
+then explicitly authorized public visibility. Retain all Copilot-origin
+notes/headers and project/tooling documentation, especially Octave/MATLAB
+compatibility guidance.
 
 Other optional next steps (not requested):
 
