@@ -292,6 +292,12 @@ for now and is to be deleted (never made public) once the user is satisfied.
 `git@github.com:llascari/rfdude_pll_pn_tools.git`** (or set `origin` to it,
 then `git fetch && git reset --hard origin/main` after saving local work).
 
+Made **public** 2026-10-31 with user authorization:
+https://github.com/llascari/rfdude_pll_pn_tools. Verified anonymous access
+to the repository, `LICENSE` and tag `v2026.10`; contribution features remain
+disabled. GitHub's license detector reports "Other" because of the added
+scope paragraph in `LICENSE`.
+
 ## October 31 follow-up: selection behavior in aggregate plots
 
 Aggregate/summary views already plot all completed cases. The case list now
@@ -390,9 +396,8 @@ workflow to CVHD-950 or LMX2594 if requested. Use the new opt-in programmatic
 profile input when frequency-dependent characterization is wanted; do not
 silently change existing file-input behavior. Resume GUI testing as useful.
 Public release: MIT license committed/pushed and GitHub contribution features
-disabled (see the release section above); the public candidate is
-`llascari/rfdude_pll_pn_tools`. Remaining: the user's final review, then
-explicitly authorized public visibility of that repository, and deletion of
+disabled (see the release section above); published publicly as
+`llascari/rfdude_pll_pn_tools`. Remaining: deletion of
 the old private `rfdude_tools` repository. Retain all Copilot-origin
 notes/headers and project/tooling documentation, especially Octave/MATLAB
 compatibility guidance.
