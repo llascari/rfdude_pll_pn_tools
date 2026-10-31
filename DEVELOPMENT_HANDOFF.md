@@ -1,6 +1,6 @@
 # Development handoff
 
-Updated: 2026-10-26, end of session.
+Updated: 2026-10-31, end-of-session checkpoint for continued user testing.
 
 ## Current objective
 
@@ -11,13 +11,19 @@ targeted changes that preserve the existing form and style (see `AGENTS.md`).
 
 ## Repository checkpoint
 
-- Branch `main`; last commit `2010c49` ("added mathcad ref"), matching `origin/main`.
-- The work below is **uncommitted** and waiting for your review, commit and push.
-  The assistant did not stage, commit, or push anything.
-- Files changed: `AGENTS.md`, `pll_synth/aa_RunPllDesign_XXXX.m`,
-  `pll_synth/pll_synth.txt`, `pll_synth/rfdude_pll_oct_0p1.m`, plus this file (new).
+- Branch `main`; October 31 tooling is being committed as
+  "Add Octave-first PLL configurator and reloadable analysis viewer",
+  following `d6d872a` (October 26 transient implementation).
+- The October 26 work below was committed in `d6d872a`. The worktree was clean
+  at the start of the October 31 review.
+- October 31 commit scope: this handoff,
+  `AGENTS.md`, `pll_synth/pll_synth.txt`, small additive changes in the existing PLL core,
+  and new configurator, runner/generator/validation helpers, viewer and tests.
+  User authorized committing and pushing this scope to `origin/main`.
+  The user-created `pll_synth/aa_run_user_config_XXXX_design_TEST.m` is left
+  local and untracked; last GUI state and generated results remain ignored.
 
-## Completed this session (uncommitted)
+## Completed October 26 (committed in `d6d872a`)
 
 1. **`AGENTS.md`** (new): strict rules for targeted changes that preserve form
    and style, plus a pointer to the Mathcad PDF as a historical reference.
@@ -59,9 +65,118 @@ parameter-based noise (no data files), figures hidden.
 
 Note: `pll_synth/demo1.m` and the `pn/` tools were not exercised.
 
+## October 31: PLL run configurator, runner and viewer
+
+Reviewed `pll_synth/aa_RunPllDesign_XXXX.m`, relevant core input/filter/output
+handling, the historical PDF's input organization, and the neighboring
+`rfdude_comms_tools` SCM/OFDM outer scripts and parameter-sweep functions.
+
+The existing split is suitable: a readable outer script fills `pll_inputs_s`,
+calls the existing analysis script, and computes integrated noise/EVM/residual
+FM. The modem workbenches likewise expose single/sweep mode and parameter
+values in the outer script, with separate per-point execution and aggregation.
+
+Implemented under the user's direction:
+
+- `bb_pll_setup_gui.m`: grouped native controls with persistent edits, file
+  browsing, dependent-field enablement, single/sweep controls and final
+  "Run the script"/"Enable data viewer after run" checkboxes. Generating without
+  running is supported. Local `_pll_setup_last.mat` restores even unfinished
+  entries, section, script name and checkboxes; "Reset everything" confirms
+  before restoring defaults. The existing `_` output ignore rule covers state.
+- `rfdude_pll_configuration.m` reads defaults from the human-created runner;
+  `rfdude_pll_parse_value.m` accepts numeric literals/lists/ranges without
+  executing expressions. `rfdude_pll_validate_configuration.m` validates
+  dependencies, units/ranges, synthesis phase-delay limits and noise files.
+- `rfdude_pll_generate_script.m` preserves explicit assignments, comments and
+  parameter ordering in `aa_run_user_config_...m`. Generated scripts retain
+  the original clc/close-all/clear startup and expose familiar single-pass
+  output names, plus `PLL_DATA_s`. Tool paths are relative to the script.
+  Follow-up: every editable setting now has a nearby explanation of units,
+  dependencies and behavior, with fuller sweep/output/metric guidance.
+  Existing inline comments are retained and the blanket file-metadata
+  override note is corrected in generated scripts only.
+- `rfdude_pll_run.m` executes the existing core in a fresh per-case workspace,
+  synthesizes at each design target and applies the same component overrides.
+  Bandwidth/phase margin/PFD frequency/charge-pump current/output frequency
+  sweeps are supported; component tolerances are out of scope. Full overrides
+  with bandwidth/phase-margin target sweeps are rejected as ineffective.
+- Per-point exports live in `<basename>_cases/`; `<basename>_data.mat` is
+  checkpointed before execution and after each point, retaining pending/failed
+  status. Overwrite requires explicit opt-in. The dataset embeds settings,
+  actual components, noise/source curves, metrics and enabled transient traces.
+- `cc_pll_data_viewer.m` opens datasets independently or after a run, with
+  phase-noise and transient surfaces/3-D contours, point selection/overlays,
+  requested/achieved BW/PM, components, offset noise, integrated phase/EVM,
+  residual FM, model-specific settling and cycle slips. Display-only transient
+  resampling is limited to 1000 points; full traces remain stored.
+- Core changes only isolate figure numbers via an optional input, honor
+  existing pn_ylimits, and restrict noise MAT loading to pn_struct (preventing
+  unrelated saved variables from corrupting the new run workspace), plus
+  explicit file-only PDF/JPEG exports described below.
+- All new MATLAB/Octave files and generated scripts carry a Copilot-generated,
+  under-Lance-Lascari-direction header. Usage is in `pll_synth/pll_synth.txt`.
+
+Fresh validation: Octave 11.3.0 (Qt) and MATLAB R2025a Update 1.
+
+```sh
+octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath('pll_synth'); test_pll_run_tools();"
+matlab -batch "addpath('pll_synth'); test_pll_run_tools();"
+```
+
+Tests cover numeric parsing/validation; direct-core numerical equivalence;
+generated single/sweep scripts; fixed R3/C3 and varying C1 across 1/2/4 kHz
+bandwidth targets; both transient vectors; distinct disabled/not-settled
+statuses; automatic viewer launch; all 20 viewer modes; saved-data reopening
+after removal of synthetic source files; existing-figure preservation; and
+GUI navigation/unfinished-entry restoration using isolated temporary state.
+No hardware or local measurement files were used. Existing residual-FM and
+MATLAB complex-plot warnings remain visible; no claim of residual-FM accuracy.
+The Octave QSocketNotifier startup message also remains.
+
+Follow-up policy recorded in `AGENTS.md`: GNU Octave first; maintain and
+perform MATLAB compatibility testing when it does not slow development.
+MATLAB use is authorized on this computer. Focused or parallel checks are
+preferred; record deferred compatibility coverage without blocking Octave.
+The same regression commands above were freshly rerun after the generated
+comment changes and passed in both runtimes. Additional assertions check
+comment coverage for every editable setting, retained original comments,
+Octave-first/Copilot headers and corrected file-input guidance.
+
+Printer fix: all 12 core figure exports now pass an actual figure handle and
+an explicit `-dpdf` or `-djpeg` driver instead of relying on MATLAB's print
+argument/default-driver interpretation. Existing output names and switches
+are retained; already-generated scripts use the corrected shared core.
+The regression commands above were freshly rerun and passed in Octave and
+MATLAB with both export flags enabled and both transient models enabled.
+Tests verify all six expected PDFs by their `%PDF-` signatures and all six
+JPEGs via image metadata. Earlier tests had disabled figure saving, so they
+did not cover this behavior. No printer configuration or queued jobs changed.
+
+Coverage limit: native save-file/overwrite/reset modal dialog clicks are not
+automated in the regression suite. MATLAB batch disallows blocking dialogs;
+an attempted display-enabled reset test produced a timer callback diagnostic
+and was removed rather than counting it as reliable automated coverage.
+The user reported clicking a button in the popped-up test GUI; that run used
+isolated temporary setup state, not the normal last-inputs file, and is not
+counted as an automated reset validation.
+Normal local Octave startup previously reported unrelated PETSc-path/audio
+package issues; no startup files or packages were changed.
+
 ## Continue here
 
-Nothing is in progress. Optional next steps that came up (not requested yet):
+The user reported excellent results from a quick first Octave test and that
+MATLAB also works, then paused for more testing later. MATLAB's unwanted
+printer output was fixed in the shared core and file exports were freshly
+validated in both runtimes. No further feature work is in progress.
+
+Next: continue interactive testing in Octave, especially native save/reset
+dialogs, layout, sweep browsing and practical input combinations. Maintain
+MATLAB compatibility checks when they do not slow Octave-first development.
+The user's local generated test script and ignored state/results are not part
+of the source commit and will not arrive on another computer via Git.
+
+Other optional next steps (not requested):
 
 1. Nonlinear model refinements: PFD reset delay / dead zone, charge-pump
    up/down mismatch and leakage, charge-pump output compliance limits.
@@ -79,9 +194,15 @@ Nothing is in progress. Optional next steps that came up (not requested yet):
 - Generated outputs (`_*.mat`, `_*.jpg`, `_*_results.csv`) are written to the
   working directory and are git-ignored by `pll_synth/.gitignore`.
 - Run from inside `pll_synth/` (the run script uses relative paths).
+- The new configurator's last-state MAT is local-only and must be copied
+  manually for continuity on another computer. Generated scripts use relative
+  tool paths, but browsed absolute noise-file paths remain machine-specific.
+  Saved datasets embed the curves needed for browsing without those files.
 
 ## Synchronization
 
-Changes exist only in this worktree. Commit and push with your normal VS Code
-workflow; pulling `main` elsewhere will pick them up. Chat history does not
-transfer; this file and `AGENTS.md` are the restart point.
+The user authorized an end-of-session commit and push to `origin/main`.
+Verify push success in the Git result; a local commit alone is not shared.
+On another computer, fetch/pull `main` to receive the tooling and this handoff;
+copy local state/data separately if wanted. Chat history does not transfer;
+this file and `AGENTS.md` are the restart point.

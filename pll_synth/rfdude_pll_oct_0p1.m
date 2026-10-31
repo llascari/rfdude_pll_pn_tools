@@ -38,6 +38,9 @@ if(startuptest==1)
 	fsweep_main_pts=pll_inputs_s.fsweep_main_pts;            
 	fmain_Hz=logspace(log10(fstart_main_Hz),log10(fstop_main_Hz),fsweep_main_pts);           
 	fignum=0; %setup
+	if isfield(pll_inputs_s,'figure_number_base') %%NOTE (copilot generated under LL direction): isolate generated-run figures
+		fignum=pll_inputs_s.figure_number_base;
+	end
 	fout_desired_Hz=pll_inputs_s.fout_desired_Hz;  % desired final output frequency (multiplier divider output
 	mult=pll_inputs_s.mult; %set to 1 for normal
 	Fref_Hz=pll_inputs_s.Fref_Hz; %reference/phase detector frequency (PFD freq)           
@@ -53,7 +56,7 @@ if(startuptest==1)
 
 		FileVCO=pll_inputs_s.FileVCO; %uses standard pn_struct format    
 		disp("Using VCO noise from File");
-		load(pll_inputs_s.FileVCO);
+		load(pll_inputs_s.FileVCO,'pn_struct');
 		pn_struct_vco=pn_struct;     
 		clear pn_struct; %avoid conflict later
 		pn_struct_vco.kvco
@@ -80,6 +83,9 @@ semilogx(fmain_Hz,vco_n_interp,pn_struct_vco.f,pn_struct_vco.n);
 title('VCO interp verification');
 
 pn_ylimits=[-200,0];
+if isfield(pll_inputs_s,'pn_ylimits')
+	pn_ylimits=pll_inputs_s.pn_ylimits;
+end
 ylim(pn_ylimits);
 
 Nvco=10.^(vco_n_interp./20);  %convert to voltage    
@@ -107,7 +113,7 @@ bUseTCXOFromFile=pll_inputs_s.bUseTCXOFromFile; %% if 1, load file below instead
 %% TCXO first
 if bUseTCXOFromFile==1
 	disp("Using TCXO noise from File");
-	load(pll_inputs_s.FileTCXO);
+	load(pll_inputs_s.FileTCXO,'pn_struct');
 	pn_struct_tcxo=pn_struct;
 	clear pn_struct; % get rid of this to avoid conflicts later
 
@@ -199,6 +205,9 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
         transient_nl_fvco_max_Hz=pll_inputs_s.transient_nl_fvco_max_Hz;
     end
     pn_ylimits=[-200,0];
+    if isfield(pll_inputs_s,'pn_ylimits')
+        pn_ylimits=pll_inputs_s.pn_ylimits;
+    end
 
     bWriteCSVtable=pll_inputs_s.bWriteCSVtable;
 
@@ -367,10 +376,10 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    set(leg1,'Interpreter','none');
 			    if bSaveFigs==1
 				    if bSaveFigsPDF
-					    print(fignum,strcat(FigSave_file_basename,'_transient.pdf'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_transient.pdf'),'-dpdf');
 				    end
 				    if bSaveFigsJPG
-					    print(fignum,strcat(FigSave_file_basename,'_transient.jpg'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_transient.jpg'),'-djpeg');
 				    end
 			    end
 		    end
@@ -536,10 +545,10 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    ylabel('phase error at PFD (cycles)');
 			    if bSaveFigs==1
 				    if bSaveFigsPDF
-					    print(fignum,strcat(FigSave_file_basename,'_transient_nl.pdf'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_transient_nl.pdf'),'-dpdf');
 				    end
 				    if bSaveFigsJPG
-					    print(fignum,strcat(FigSave_file_basename,'_transient_nl.jpg'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_transient_nl.jpg'),'-djpeg');
 				    end
 			    end
 		    end
@@ -580,10 +589,10 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 		    if bSaveFigs==1
 			    % print 
 			    if bSaveFigsPDF
-				    print(fignum,strcat(FigSave_file_basename,'_VCO.pdf'));
+				    print(figure(fignum),strcat(FigSave_file_basename,'_VCO.pdf'),'-dpdf');
 			    end
 			    if bSaveFigsJPG
-				    print(fignum,strcat(FigSave_file_basename,'_VCO.jpg'));
+				    print(figure(fignum),strcat(FigSave_file_basename,'_VCO.jpg'),'-djpeg');
 			    end
 		    end	     
 
@@ -651,10 +660,10 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    if bSaveFigs==1
 				    % print 
 				    if bSaveFigsPDF
-					    print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.pdf'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_R2_R3Noise.pdf'),'-dpdf');
 				    end
 				    if bSaveFigsJPG
-					    print(fignum,strcat(FigSave_file_basename,'_R2_R3Noise.jpg'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_R2_R3Noise.jpg'),'-djpeg');
 				    end
 			    end	          
 			    %VCO output frequency
@@ -674,10 +683,10 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    if bSaveFigs==1
 				    % print 
 				    if bSaveFigsPDF
-					    print(fignum,strcat(FigSave_file_basename,'_totals.pdf'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_totals.pdf'),'-dpdf');
 				    end
 				    if bSaveFigsJPG
-					    print(fignum,strcat(FigSave_file_basename,'_totals.jpg'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_totals.jpg'),'-djpeg');
 				    end
 			    end	    
 		    end     
@@ -698,10 +707,10 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    if bSaveFigs==1
 				    % print 
 				    if bSaveFigsPDF
-					    print(fignum,strcat(FigSave_file_basename,'_contribs_total.pdf'));
+					    print(figure(fignum),strcat(FigSave_file_basename,'_contribs_total.pdf'),'-dpdf');
 				    end
 				    if bSaveFigsJPG
-					    print(fignum,strcat(FigSave_file_basename,'_contribs_total.jpg')); 
+					    print(figure(fignum),strcat(FigSave_file_basename,'_contribs_total.jpg'),'-djpeg');
 				    end
 			    end	    
 		    end        
