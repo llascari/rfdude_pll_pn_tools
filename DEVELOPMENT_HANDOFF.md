@@ -103,13 +103,16 @@ Implemented under the user's direction:
   with bandwidth/phase-margin target sweeps are rejected as ineffective.
 - Per-point exports live in `<basename>_cases/`; `<basename>_data.mat` is
   checkpointed before execution and after each point, retaining pending/failed
-  status. Overwrite requires explicit opt-in. The dataset embeds settings,
-  actual components, noise/source curves, metrics and enabled transient traces.
+  status. `bOverwriteResults` defaults on; set it off to protect existing
+  results. The dataset embeds settings, actual components, noise/source curves,
+  metrics and enabled transient traces.
 - `cc_pll_data_viewer.m` opens datasets independently or after a run, with
   phase-noise and transient surfaces/3-D contours, point selection/overlays,
   requested/achieved BW/PM, components, offset noise, integrated phase/EVM,
-  residual FM, model-specific settling and cycle slips. Display-only transient
-  resampling is limited to 1000 points; full traces remain stored.
+  residual FM, model-specific settling and cycle slips. 3-D surface/contour
+  views enable interactive drag rotation; 2-D views disable rotation.
+  Display-only transient resampling is limited to 1000 points; full traces
+  remain stored.
 - Core changes only isolate figure numbers via an optional input, honor
   existing pn_ylimits, and restrict noise MAT loading to pn_struct (preventing
   unrelated saved variables from corrupting the new run workspace), plus
@@ -130,6 +133,9 @@ bandwidth targets; both transient vectors; distinct disabled/not-settled
 statuses; automatic viewer launch; all 20 viewer modes; saved-data reopening
 after removal of synthetic source files; existing-figure preservation; and
 GUI navigation/unfinished-entry restoration using isolated temporary state.
+The October 31 follow-up also verifies the overwrite-on default, a successful
+rerun with overwrite enabled, protection when disabled, the default GUI
+checkbox, and rotation guidance on each 3-D viewer mode.
 No hardware or local measurement files were used. Existing residual-FM and
 MATLAB complex-plot warnings remain visible; no claim of residual-FM accuracy.
 The Octave QSocketNotifier startup message also remains.
@@ -163,18 +169,106 @@ counted as an automated reset validation.
 Normal local Octave startup previously reported unrelated PETSc-path/audio
 package issues; no startup files or packages were changed.
 
+## October 31 follow-up: overwrite default and interactive plots
+
+`bOverwriteResults` now defaults to 1 in the shared configuration, so the GUI
+and generated scripts start with overwriting enabled. Set it to 0 to preserve
+existing datasets/case files and reject a conflicting run. Overwrite does not
+delete surplus case files from a previous larger sweep.
+
+The viewer now enables `rotate3d` for 3-D surface/contour plots and disables it
+when returning to 2-D views. The status text and `pll_synth.txt` explain that
+the plot can be dragged to rotate. Updated run-option comments and usage docs
+match the new default.
+
+The focused regression commands above were rerun after these changes and
+passed in Octave 11.3.0 and MATLAB R2025a Update 1. They include a repeat run
+to verify overwrite behavior and the explicit opt-out. Batch tests exercise
+all viewer modes; physical mouse dragging remains an interactive GUI check.
+
+## October 31 follow-up: locating saved viewer datasets
+
+The viewer's no-argument picker now starts in `pll_synth/`, defaults to
+`*_data.mat`, and offers folder selection by passing a directory. The viewer
+reports that legacy core `<basename>.mat` and per-case `*_caseNNNN.mat` files
+contain `pn_struct`, not a reloadable `pll_data_s` dataset. Usage guidance was
+added to `pll_synth/pll_synth.txt`. The existing
+`_rfd_pll_Design_XXXX_data.mat` opens successfully.
+
+The Octave 11.3.0 and MATLAB R2025a Update 1 regression commands pass with a
+test for the legacy-file diagnostic. Physical file-picker interaction is not
+automated.
+
+## October 31 follow-up: fixed 3D camera views
+
+The viewer provides Top, Bottom, Front, Back, Left, Right, Iso and 2D
+projection buttons for rendered 3D surfaces/contours. They are disabled for
+views that do not render a multi-case surface. Mouse rotation remains enabled.
+The regression suite checks availability for all viewer modes and invokes
+front, 2D and isometric presets. One test explicitly returns to a 3D surface
+before invoking camera buttons because the controls correctly disable on the
+last (2D) viewer mode. The full regression command passed in Octave 11.3.0
+and MATLAB R2025a Update 1.
+
+## Public release context and license review (decision pending)
+
+Inspected the public `rfdude_pn_pll_tools_0p001.zip` at
+`https://www.rfdude.com/s/rfdude_pn_pll_tools_0p001.zip`: it is a 35-file
+standalone `pll_synth/` plus `pn/` package, with old run/core scripts, PN
+utilities, four shipped CSV measurement traces and minimal READMEs. Its README
+calls the tools personally developed and shared with colleagues/employers at
+the author's discretion. `rights.txt` says sharing is limited, that the author
+was not ready to open-source, and leaves rights as TBD. Several core files and
+PN utilities differ from the current versions; the current repository adds the
+configurator, runner, reloadable viewer, tests, Mathcad reference, and project
+handoff/instructions. The published archive is historical context, not an
+open-source license grant.
+
+Initial license recommendation, not yet approved or implemented: MIT is the
+simplest fit for encouraging unrestricted use and forks; BSD-3-Clause is a
+similar permissive alternative with an explicit no-endorsement clause; Apache
+2.0 is worth considering if an explicit patent grant is important. Before a
+repository-wide license is added, verify distribution rights for the legacy
+worksheet/reference PDF, bundled measurement traces, and any code made during
+paid work. Do not remove `AGENTS.md`, `DEVELOPMENT_HANDOFF.md`, Octave/MATLAB
+compatibility guidance, or Copilot-origin notes/headers as part of release
+cleanup. GitHub documents separate repository settings to disable both Issues
+and Pull requests; no repository settings were changed.
+
+## October 31 follow-up: selection behavior in aggregate plots
+
+Aggregate/summary views already plot all completed cases. The case list now
+allows only one selection in those views for the details pane, and its label
+explains that the plot shows all cases. Ctrl multi-selection remains available
+only for individual noise overlays, transient overlays, and nonlinear PFD
+phase-error plots where the selected cases change the plotted curves.
+Regression coverage checks the selector mode across every viewer view and
+verifies that multi-selection is reduced to one case on returning to an
+aggregate plot.
+
 ## Continue here
 
-The user reported excellent results from a quick first Octave test and that
-MATLAB also works, then paused for more testing later. MATLAB's unwanted
-printer output was fixed in the shared core and file exports were freshly
-validated in both runtimes. No further feature work is in progress.
+Checkpoint: October 31, 2026. The user paused after the viewer camera presets,
+aggregate-view selection behavior, published-archive inspection, and
+preliminary license research. Fixed camera buttons and selection behavior
+passed `test_pll_run_tools()` in Octave 11.3.0 and MATLAB R2025a Update 1.
+Earlier in this session, the dataset-picker change also passed both suites
+and opened the existing `_rfd_pll_Design_XXXX_data.mat` dataset successfully.
 
-Next: continue interactive testing in Octave, especially native save/reset
-dialogs, layout, sweep browsing and practical input combinations. Maintain
-MATLAB compatibility checks when they do not slow Octave-first development.
-The user's local generated test script and ignored state/results are not part
-of the source commit and will not arrive on another computer via Git.
+Worktree changes are local and uncommitted; do not commit or push without
+authorization. `pll_synth/aa_run_user_config_XXXX_design_TEST.m` contains a
+local five-value bandwidth sweep (`[500 1000 2000 5000 10000]`) and updated
+overwrite comments. Preserve that user edit. Earlier ignored setup state and
+generated results remain machine-local.
+
+Next: resume interactive GUI testing as useful, then ask the user to decide
+whether to pursue open-source release and which license to use. No license
+file or GitHub feature settings have been changed. Before applying a license,
+resolve provenance/distribution rights for the historical PDF/worksheet,
+shipped measurement traces, and code developed for paid work. Retain all
+Copilot-origin notes/headers and project/tooling documentation, especially
+Octave/MATLAB compatibility guidance. The published ZIP inspection and
+preliminary MIT/BSD-3-Clause/Apache-2.0 comparison are documented above.
 
 Other optional next steps (not requested):
 

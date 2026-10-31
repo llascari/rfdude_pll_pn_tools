@@ -63,17 +63,24 @@ unless def_filename specifies an absolute results directory:
     <basename>_data.mat          reloadable single/sweep dataset
     <basename>_cases/            per-point pn_struct MAT/CSV/figure exports
 Results are checkpointed before execution and after each point. Pending and
-failed points remain identifiable. Existing datasets/case directories are
-protected unless bOverwriteResults is explicitly enabled; choose a new
-basename for a new experiment. Overwriting fewer points does not remove
-older per-point files; the new dataset is the authoritative point list.
+failed points remain identifiable. bOverwriteResults defaults to 1, allowing
+the dataset and matching per-point files to be overwritten in an existing case
+directory; set it to 0 to protect existing results. Choose a new basename for
+a new experiment when you want to retain older results. Overwriting fewer
+points does not remove older per-point files; the new dataset is the
+authoritative point list.
 
 Open the viewer separately, without rerunning analysis:
     cc_pll_data_viewer
     cc_pll_data_viewer('path/to/<basename>_data.mat')
+With no argument, the file picker starts in pll_synth/ and filters
+*_data.mat datasets. You can also pass a folder to open the picker there.
+Choose the top-level <basename>_data.mat, not <basename>.mat or a file inside
+<basename>_cases/; those core/per-point MAT files contain pn_struct only.
 The viewer also accepts an in-memory pll_data_s structure. Surface/contour
-and summary views include all completed points; the selector supports
-individual-point details and Ctrl-selection for overlays. Views include
+and summary views include all completed points; the selector remains available
+for one-point details, but Ctrl multi-selection is enabled only for individual
+noise/transient overlays and nonlinear PFD phase-error plots. Views include
 phase-noise surfaces/3-D contours, noise contributors and selected offsets,
 integrated RMS phase error/EVM, residual FM, requested/achieved bandwidth and
 phase margin, component values, settling estimates and cycle slips.
@@ -81,7 +88,11 @@ Both transient models have surfaces/3-D contours and individual overlays;
 nonlinear PFD phase error is available separately. Transient surfaces show
 signed frequency error versus time and swept value, resampled for display
 to at most 1000 times over their common time span. Full traces remain saved.
-One-point datasets show curves instead of surfaces.
+One-point datasets show curves instead of surfaces. Drag within 3-D surfaces
+and contours to rotate the view; rotation is enabled for those views only.
+Fixed-view buttons select Top, Bottom, Front, Back, Left, Right, isometric
+(Iso), or a top-down 2D projection. These buttons are enabled only when the
+selected view actually displays a multi-case 3-D surface or contour.
 
 The dataset embeds input/effective settings, components, noise curves and
 file-backed source noise; browsing does not require original noise files.

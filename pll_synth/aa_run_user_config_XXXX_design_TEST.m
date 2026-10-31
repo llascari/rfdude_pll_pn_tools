@@ -144,7 +144,7 @@ run_options_s.bRunSweep=1;
 % Design target field: BW_desired_Hz, PM_desired_deg, Fref_Hz, Kphi_A_cycle or fout_desired_Hz.
 run_options_s.sweep_parameter='BW_desired_Hz';
 % Target values in that field's units; e.g. [1000 2000 4000] Hz for bandwidth, or 1000:1000:4000.
-run_options_s.sweep_values=[1000 2000 4000];
+run_options_s.sweep_values=[500 1000 2000 5000 10000];
 % Lower phase-noise integration OFFSET (Hz); lies within the saved frequency grid.
 run_options_s.integration_lower_Hz=100;
 % Upper integration OFFSET (Hz); same limits at every point so RMS phase/EVM/residual FM are comparable.
@@ -155,7 +155,7 @@ run_options_s.noise_offsets_Hz=[100 1000 10000 100000];
 run_options_s.bShowCorePlots=1;
 % 1 = launch cc_pll_data_viewer after the run; 0 = save results only, for later independent viewing.
 run_options_s.bEnableDataViewer=1;
-% 0 = protect existing dataset/case folder; 1 = explicitly allow replacement. Older surplus case files remain.
+% 1 = replace an existing dataset and matching case files (default); set to 0 to protect them. Older surplus case files remain.
 run_options_s.bOverwriteResults=1;
 
 %% locate the analysis tools and run the configured experiment
@@ -166,7 +166,7 @@ pll_tool_directory=fullfile(run_options_s.base_directory,'.');
 addpath(pll_tool_directory);
 % A fresh workspace is used per point; the core still performs the PLL analysis.
 % Saved outputs: <results basename>_data.mat and <results basename>_cases/.
-% Pending/failed cases retain status; existing output needs explicit overwrite.
+% Pending/failed cases retain status; existing results are overwritten by default.
 PLL_DATA_s=rfdude_pll_run(pll_inputs_s,run_options_s);
 
 %% basic single-pass results (same names as the human-created runner)
