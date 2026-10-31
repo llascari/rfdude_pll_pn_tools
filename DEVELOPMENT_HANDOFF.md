@@ -279,9 +279,18 @@ range kept the 124 earlier commit IDs, including both GitHub-signed
 September 2025 commits; an unrestricted run strips signatures and changes
 every ID. The 11 later commits were rewritten (IDs in this file updated);
 trees, messages, dates and names were verified identical to a backup bundle,
-then force-pushed. **Other clones made before this must re-clone or
-`git fetch && git reset --hard origin/main`** (after saving local work).
-Annotated tag `v2026.10` marks the first public-release snapshot.
+then force-pushed. Annotated tag `v2026.10` marks the first public-release
+snapshot.
+
+GitHub kept the replaced commit retrievable by ID in the old repository, so
+the cleaned history and tag were pushed to a fresh private repository,
+`llascari/rfdude_pll_pn_tools` (same description and disabled features,
+verified; the old commit is not found there). The project name in the files
+remains `rfdude_tools`. The old private `llascari/rfdude_tools` is retained
+for now and is to be deleted (never made public) once the user is satisfied.
+**Other clones made before this must re-clone from
+`git@github.com:llascari/rfdude_pll_pn_tools.git`** (or set `origin` to it,
+then `git fetch && git reset --hard origin/main` after saving local work).
 
 ## October 31 follow-up: selection behavior in aggregate plots
 
@@ -381,8 +390,10 @@ workflow to CVHD-950 or LMX2594 if requested. Use the new opt-in programmatic
 profile input when frequency-dependent characterization is wanted; do not
 silently change existing file-input behavior. Resume GUI testing as useful.
 Public release: MIT license committed/pushed and GitHub contribution features
-disabled (see the release section above). Remaining: the user's final review,
-then explicitly authorized public visibility. Retain all Copilot-origin
+disabled (see the release section above); the public candidate is
+`llascari/rfdude_pll_pn_tools`. Remaining: the user's final review, then
+explicitly authorized public visibility of that repository, and deletion of
+the old private `rfdude_tools` repository. Retain all Copilot-origin
 notes/headers and project/tooling documentation, especially Octave/MATLAB
 compatibility guidance.
 
