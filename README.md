@@ -1,9 +1,15 @@
 # rfdude_tools
-Lance Lascari's personally developed tools, available to colleagues and employers at Lance's discretion
+Lance Lascari's personally developed RF/PLL/phase-noise tools, free under the [MIT License](LICENSE)
 Reorganized 2025
 
+**Free, unsupported software, provided as-is.** Pull requests and issue reports
+are not accepted. You are encouraged to fork it and modify it as you see fit.
+I update this repository periodically and may change or remove anything, so
+keep your own copy of any version you depend on.
+
 The tools here were translated from old Mathcad work into Octave first /Matlab as a secondary priority as a completely manual exercise.   Fall of 2026 this curmudgeon started seeing the light when it comes to LLM's and has started letting GitHub Copilot add enhancements and tooling around the core work which remains mostly intact.    
-All Copyright(C) Lance Lascari
+Copyright (c) 1999-2026 Lance Lascari. MIT licensed; see [LICENSE](LICENSE) and
+[NOTICE.txt](NOTICE.txt) for scope, Copilot credit, and datasheet-data attribution.
 
 ## Datasheet-to-PLL demonstration
 

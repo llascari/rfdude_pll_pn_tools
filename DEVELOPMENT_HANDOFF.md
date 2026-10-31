@@ -214,7 +214,7 @@ before invoking camera buttons because the controls correctly disable on the
 last (2D) viewer mode. The full regression command passed in Octave 11.3.0
 and MATLAB R2025a Update 1.
 
-## Public release context and license review (decision pending)
+## Public release context and license review (MIT approved; release in progress)
 
 Inspected the public `rfdude_pn_pll_tools_0p001.zip` at
 `https://www.rfdude.com/s/rfdude_pn_pll_tools_0p001.zip`: it is a 35-file
@@ -238,6 +238,33 @@ paid work. Do not remove `AGENTS.md`, `DEVELOPMENT_HANDOFF.md`, Octave/MATLAB
 compatibility guidance, or Copilot-origin notes/headers as part of release
 cleanup. GitHub documents separate repository settings to disable both Issues
 and Pull requests; no repository settings were changed.
+
+Release decisions (user, 2026-10-31): MIT, `Copyright (c) 1999-2026 Lance
+Lascari`, matching the public RFdudeSmithChartV2 pattern (MIT + scope note,
+NOTICE.txt, README as-is statement, Issues disabled). The user confirmed sole
+ownership of the code, Mathcad PDF and four shipped CSV traces (no employer or
+client claim); all are included under MIT. The PDF itself states "Personal
+work of Lance Lascari (not of his employer!)". Policy: provided as-is, no pull
+requests or issue reports, forks and modifications encouraged; updates may
+change anything, so users should keep copies of versions they depend on.
+
+Implemented locally: `LICENSE`, `NOTICE.txt` (Copilot role, no support,
+Mini-Circuits ROS-2100-119+ transcribed-value/trademark attribution; the
+datasheet PDF is not shipped), README opening/copyright lines, and deletion of
+superseded `rights.txt`. The user's README "curmudgeon" paragraph is unchanged.
+
+Pre-release audit: full Git history has no credentials/tokens or local
+absolute paths; CSV traces contain no instrument serial/host identity. The
+Mathcad PDF contains the author's historical public email addresses. One old
+commit's author email is `llascari@rfdude54.localdomain` (hostname only);
+history rewrite was not recommended.
+
+Remaining, each requiring explicit authorization: commit/push the license
+files; disable Issues, Wiki, Projects and pull requests (if offered) and update
+the GitHub description (still "available to colleagues and employers..."); make
+the repository public last, since its full history becomes permanently
+copyable. Optionally replace or redirect the old rfdude.com ZIP, whose
+`rights.txt` still says the tools are not open source.
 
 ## October 31 follow-up: selection behavior in aggregate plots
 
@@ -336,13 +363,11 @@ characterization and the specified 1350-2100 MHz band. Apply the same extraction
 workflow to CVHD-950 or LMX2594 if requested. Use the new opt-in programmatic
 profile input when frequency-dependent characterization is wanted; do not
 silently change existing file-input behavior. Resume GUI testing as useful.
-Ask the user whether to pursue open-source release and which license to use;
-no license file or GitHub feature settings have changed. Before applying a
-license, resolve provenance/distribution rights for the historical
-PDF/worksheet, shipped measurement traces, and code developed for paid work.
-Retain all Copilot-origin notes/headers and project/tooling documentation,
-especially Octave/MATLAB compatibility guidance. The published ZIP inspection
-and preliminary MIT/BSD-3-Clause/Apache-2.0 comparison are documented above.
+Public release: MIT was approved and the license files are in place locally
+(see the release section above). Remaining release steps need explicit
+authorization: commit/push, GitHub feature settings/description, then public
+visibility. Retain all Copilot-origin notes/headers and project/tooling
+documentation, especially Octave/MATLAB compatibility guidance.
 
 Other optional next steps (not requested):
 
