@@ -14,11 +14,11 @@ five-carrier sweep with fixed components and frequency-selected ROS noise/Kvco.
 
 ## Repository checkpoint
 
-- Branch `main`, current HEAD `92ac270` ("awesome progress"), following
-  `27c6ff3` ("generated test example") and `ff77c15`
+- Branch `main`, current HEAD `e4ab61b` ("awesome progress"), following
+  `4b545ab` ("generated test example") and `bb65e12`
   ("Add Octave-first PLL configurator and reloadable analysis viewer").
   The new PN-profile/example work below remains local and uncommitted.
-- The October 26 work below was committed in `d6d872a`. The worktree was clean
+- The October 26 work below was committed in `9a9497e`. The worktree was clean
   at the start of the October 31 review.
 - October 31 commit scope: this handoff,
   `AGENTS.md`, `pll_synth/pll_synth.txt`, small additive changes in the existing PLL core,
@@ -27,7 +27,7 @@ five-carrier sweep with fixed components and frequency-selected ROS noise/Kvco.
   The user-created `pll_synth/aa_run_user_config_XXXX_design_TEST.m` is left
   local and untracked; last GUI state and generated results remain ignored.
 
-## Completed October 26 (committed in `d6d872a`)
+## Completed October 26 (committed in `9a9497e`)
 
 1. **`AGENTS.md`** (new): strict rules for targeted changes that preserve form
    and style, plus a pointer to the Mathcad PDF as a historical reference.
@@ -264,12 +264,24 @@ last, since its full history becomes permanently copyable. Optionally replace
 or redirect the old rfdude.com ZIP, whose `rights.txt` still says the tools
 are not open source.
 
-Done 2026-10-31 with authorization: license commit `c1b0c95` pushed to
+Done 2026-10-31 with authorization: license commit `f35d9d8` pushed to
 `origin/main`. GitHub Issues, Wiki, Projects, Discussions and pull requests
 were disabled (`gh repo edit ...=false`; pull requests via
 `gh api -X PATCH repos/llascari/rfdude_tools -F has_pull_requests=false`),
 and the description updated to the MIT/as-is/fork-freely wording. Read-back
 confirmed all features false; visibility remains **private**.
+
+History cleanup (user-authorized, 2026-10-31): one January 2026 commit's
+author/committer email exposed a hostname (`...@rfdude54.localdomain`); it
+was rewritten to `lance@rfdude.com` with
+`git filter-repo --refs <parent>..main --email-callback ...`. Limiting the
+range kept the 124 earlier commit IDs, including both GitHub-signed
+September 2025 commits; an unrestricted run strips signatures and changes
+every ID. The 11 later commits were rewritten (IDs in this file updated);
+trees, messages, dates and names were verified identical to a backup bundle,
+then force-pushed. **Other clones made before this must re-clone or
+`git fetch && git reset --hard origin/main`** (after saving local work).
+Annotated tag `v2026.10` marks the first public-release snapshot.
 
 ## October 31 follow-up: selection behavior in aggregate plots
 
