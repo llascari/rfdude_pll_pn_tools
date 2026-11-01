@@ -55,6 +55,11 @@ save_dataset(dataset_path,pll_data_s);
 for point_index=1:numel(values)
     requested=pll_data_s.cases{point_index}.requested_inputs;
     fprintf('\nPLL point %d/%d: %s = %.9g\n',point_index,numel(values),parameter,values(point_index));
+    if exist('OCTAVE_VERSION','builtin')
+        fflush(stdout); % show progress now; Octave otherwise buffers until the point ends
+    end
+    drawnow;
+    point_timer=tic;
     try
         result=run_case(requested,run_options_s,case_directory, ...
             sprintf('%s_case%04d.mat',basename,point_index));
@@ -67,6 +72,7 @@ for point_index=1:numel(values)
     end
     pll_data_s.cases{point_index}=result;
     save_dataset(dataset_path,pll_data_s);
+    fprintf('PLL point %d/%d %s in %.1f s\n',point_index,numel(values),result.status,toc(point_timer));
 end
 fprintf('PLL dataset saved: %s\n',dataset_path);
 if ~any(pll_data_s.completed)
@@ -107,6 +113,10 @@ if iscell(figure_numbers)
     figure_numbers=cell2mat(figure_numbers);
 end
 pll_inputs_s.figure_number_base=max([0;figure_numbers(:)]);
+% Sweeps from the GUI/new scripts skip core figures/exports; hidden-figure
+% rendering can hang Qt. Older scripts without the option keep their figures.
+pll_inputs_s.bCorePlots=~(options.bRunSweep && ...
+    isfield(options,'bSuppressSweepPlots') && options.bSuppressSweepPlots);
 pll_inputs_s.def_filename=output_name;
 cd(output_directory);
 core_transcript=evalc('rfdude_pll_oct_0p1;');

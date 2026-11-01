@@ -1,6 +1,6 @@
 # Development handoff
 
-Updated: 2026-10-31, shipped ROS datasheet-to-fixed-filter PLL demonstration.
+Updated: 2026-11-01, setup GUI list/linear/logarithmic sweep selection.
 
 ## Current objective
 
@@ -8,13 +8,19 @@ Port the 2002 Mathcad PLL worksheet
 (`pll_synth/Mathcad - RFdude_pll38_PDFversion.pdf`) to Octave-first,
 MATLAB-compatible code in `pll_synth/`, adding features through small,
 targeted changes that preserve the existing form and style (see `AGENTS.md`).
-Current follow-up: the reusable ROS datasheet extraction/profile example and
-root `demo_2026.m`, demonstrating a 5 kHz center design followed by a
-five-carrier sweep with fixed components and frequency-selected ROS noise/Kvco.
+Current follow-up: a sweep-type dropdown in the setup GUI, retaining the
+existing runner's numeric sweep vector and saved-data format. The shipped
+ROS profile/fixed-filter demonstration remains unchanged.
 
 ## Repository checkpoint
 
-- Branch `main`, current HEAD `e4ab61b` ("awesome progress"), following
+- Branch `main`. The November 1 sweep-type selector, deferred GUI run,
+  sweep plot suppression and sweep progress lines were committed and pushed to
+  `origin/main` on user authorization (the commit after `dfe7985`; see
+  `git log`). The ROS demonstration is committed in `ca8cf27`. The untracked
+  user script `pll_synth/aa_run_user_config_XXXX_design.m` was preserved and
+  deliberately left uncommitted. No normal setup state or result files were changed.
+- Historical October 31 checkpoint: HEAD `e4ab61b` ("awesome progress"), following
   `4b545ab` ("generated test example") and `bb65e12`
   ("Add Octave-first PLL configurator and reloadable analysis viewer").
   The new PN-profile/example work below remains local and uncommitted.
@@ -491,6 +497,110 @@ push, public-release/license decision or GitHub settings change was authorized.
 Next: run the interactive root demonstration, tweak its exposed settings as
 desired, and address the separate release/license decision only if requested.
 
+## November 1: setup GUI sweep types
+
+- `bb_pll_setup_gui.m` adds List, Start / stop / step, and Log (points per
+  octave) choices. Only the selected type's fields are shown; all raw entries
+  persist across mode changes, navigation and reopening. Reset uses the same
+  existing confirmed-reset path. Old state files restore their existing list.
+- `rfdude_pll_sweep_values.m` resolves the selected inputs to the ordinary
+  numeric `run_options_s.sweep_values` vector. Linear mode follows colon
+  endpoint behavior. Log mode requires positive endpoints and positive integer
+  intervals per octave, supports either direction, and always includes exact
+  stop (a shorter last interval was explicitly approved). Finite/distinct
+  values and the existing 100000-entry limit are checked explicitly.
+- Runner, generated-script layout, analysis equations and dataset format are
+  unchanged. Only the chosen sweep type is resolved during generation;
+  unfinished entries for other types are retained without being parsed.
+  Usage and reproducible test commands are in `pll_synth/pll_synth.txt`.
+
+Freshly passed in Octave 11.3.0 (Qt) and MATLAB R2025a Update 1:
+
+```sh
+octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath('pll_synth'); test_pll_setup_sweeps(); test_pll_run_tools();"
+matlab -batch "addpath('pll_synth'); test_pll_setup_sweeps(); test_pll_run_tools();"
+```
+
+The Octave suites were run separately with these same selectors. The MATLAB
+combined command passed; the final focused sweep suite was then rerun in both
+runtimes after the last small GUI/test changes. New tests cover three runnable
+generated sweeps, exact list/linear outputs, logarithmic ratios/endpoints,
+descending/equal/near-equal endpoints, wide dynamic range, allocation limits,
+invalid inputs, mode visibility/enabling, controls within panel bounds,
+unfinished-entry persistence and legacy state restoration. Existing numerical,
+export, viewer and GUI regression coverage also passed. All normal test output
+and state were isolated in temporary folders and cleaned up.
+
+Coverage limits: physical dropdown/file-picker/reset clicks are not automated.
+Native-control screenshot capture was unsuccessful (blank frame), so visual
+appearance is not claimed as verified; visibility and layout bounds are tested.
+Existing residual-FM, MATLAB complex-plot and Octave startup warnings remain.
+No hardware, local measurements or normal ignored setup/result files were used.
+
+Next: reopen the normal setup GUI and manually try all three modes.
+The untracked user-generated run script present at task start was not edited.
+Older sections' uncommitted-status notes are historical; the current checkpoint
+above reflects the actual Git history.
+
+## November 1 follow-up: GUI "Run the script" freezes
+
+User report: generating with "Run the script" checked often locked up Octave
+(Linux force-quit prompts), while running the saved script from the prompt
+was fine. Cause (likely): the whole analysis ran inside the Generate button
+callback, starving GUI event processing for the new plot/viewer windows.
+Fix in `bb_pll_setup_gui.m`: when called without an output (normal command
+use), it `waitfor`s the window; Generate with Run checked closes the window and
+records the script, which then runs via `evalin('base','run(...)')` outside any
+callback, in the base workspace, like a typed command. Tradeoff: the prompt is
+busy while the GUI is open. `fig=bb_pll_setup_gui(...)` keeps the old
+non-blocking/in-callback behavior used by tests.
+
+Verified in Octave 11.3.0 and MATLAB R2025a with a one-off isolated check that
+temporarily replaced `uiputfile`/`waitfor` to click Generate with Run checked:
+the callback returned with the window closed before any output existed, then
+the deferred run completed and left `PLL_DATA_s` in the base workspace. Both
+regression suites passed afterward. The real interactive freeze is not
+reproduced in automation; confirm by manual use.
+
+## November 1 follow-up: sweep hangs and `bSuppressSweepPlots`
+
+User report: a generated 24-point log `BW_desired_Hz` sweep (100-5000 Hz,
+both transients, 12501 points, JPG export, core plots hidden) eventually
+crashed/hung from the GUI and the command line. Reproduced on a copy (viewer
+off): Octave hung at 100% CPU with flat memory at point 1, and on rerun at
+point 11, each time right after `_transient_nl.jpg` and before the VCO figure.
+Single points pass in all plot/export combinations, so this is an intermittent
+Octave Qt hidden-figure render/print hang, not a numerical fault.
+
+Fix (user-endorsed "suppress graphs during sweeps"): optional core input
+`pll_inputs_s.bCorePlots` (default 1) in `rfdude_pll_oct_0p1.m` guards every
+figure and export block (the `if 1 %unhide...` blocks became
+`if bCorePlots`); calculations stay outside the guards. New run option
+`bSuppressSweepPlots` (configuration default true; validated only if present;
+GUI checkbox enabled only for sweeps; generated comment) makes `run_case` set
+`bCorePlots=0` for sweep points. Absent option = old behavior, so earlier
+generated scripts are unchanged; the user's `aa_run_user_config_XXXX_design.m`
+needs `run_options_s.bSuppressSweepPlots=1;` or regeneration.
+
+Validated: the copied 24-point script with the option finished all 24 points
+in 90 s (previously ~7-10 s/point when it did not hang), no JPGs. New
+`test_pll_setup_sweeps` assertions: suppressed sweep creates no figures/JPGs,
+plotted sweep creates 12 JPGs, and pn_struct/components/transient errors are
+identical. `test_pll_setup_sweeps` and `test_pll_run_tools` passed in Octave
+11.3.0 and MATLAB R2025a.
+
+Parallel sweeps (asked, not implemented): Octave `parallel` 4.0.2 and the
+MATLAB Parallel Computing Toolbox are installed here. It would restructure the
+runner (fresh workspace per case, per-point checkpointing, file naming,
+plots off in workers), so get direction first. User response: fine without it
+"as long as there is some indication it is alive". `rfdude_pll_run.m` now
+flushes the `PLL point k/N` start line (Octave `fflush(stdout)` + `drawnow`)
+and prints `PLL point k/N <status> in X s` after each checkpoint. Both suites
+re-passed in Octave and MATLAB. After an effort estimate (separate MATLAB
+`parfeval`/Octave `parcellfun` paths, loss of per-point progress/checkpoints
+with `parcellfun`, Octave GUI fork risk, little gain at ~90 s per 24 points),
+the user chose to skip parallel sweeps.
+
 ## Portability and cautions
 
 - `aa_RunPllDesign_XXXX.m` references `../pn/datfiles_local/*.mat` only when
@@ -508,8 +618,10 @@ desired, and address the separate release/license decision only if requested.
 
 The earlier configurator scope was authorized for commit/push to `origin/main`
 and is recorded above; that is not authorization to commit/push this follow-up.
-The PN-profile and ROS demonstration changes remain local until explicitly
-authorized and committed/pushed. A local commit alone is not shared.
+The PN-profile and ROS demonstration are now committed in the history above.
+The November 1 sweep-selector, GUI deferred-run, sweep plot suppression and
+progress changes were committed and pushed to `origin/main` on explicit user
+authorization; that does not authorize later work. A local commit alone is not shared.
 On another computer, fetch/pull only published changes and copy ignored local
 state/data separately if wanted. Chat history does not transfer; this file
 and `AGENTS.md` are the restart point.

@@ -3,6 +3,10 @@ function fig = bb_pll_setup_gui(state_file)
 % Persistent PLL setup editor and readable aa_run script generator.
 % Local _pll_setup_last.mat is git-ignored; no analysis runs until requested.
 tool_directory=fileparts(mfilename('fullpath'));
+% Called as a command, wait for the window to close, then run any requested
+% script outside the button callback (long callbacks can freeze the Qt GUI).
+wait_for_close=nargout==0;
+pending_script='';
 if nargin==0
     state_file=fullfile(tool_directory,'_pll_setup_last.mat');
 end
@@ -16,6 +20,11 @@ if exist(state_directory,'dir')~=7
 end
 [defaults,groups]=rfdude_pll_configuration();
 raw_defaults=raw_configuration(defaults);
+raw_defaults.o_sweep_type='List';
+raw_defaults.o_sweep_start='1000';
+raw_defaults.o_sweep_stop='4000';
+raw_defaults.o_sweep_step='1000';
+raw_defaults.o_sweep_points_per_octave='1';
 last=struct('raw',raw_defaults,'section',1,'run_script',false, ...
     'script_name','aa_run_user_config_XXXX_design.m');
 if exist(state_file,'file')==2
@@ -50,11 +59,15 @@ if exist(state_file,'file')==2
 end
 option_names=fieldnames(defaults.run_options_s);
 option_names(strcmp(option_names,'bEnableDataViewer'))=[];
+index=find(strcmp(option_names,'sweep_values'));
+option_names=[option_names(1:index-1); {'sweep_type'}; option_names(index); ...
+    {'sweep_start';'sweep_stop';'sweep_step';'sweep_points_per_octave'}; option_names(index+1:end)];
 groups(end+1,:)={'Run / sweep',option_names.'};
 fig=figure('name','PLL run configurator','numbertitle','off', ...
     'menubar','none','toolbar','none','position',[100 100 950 750], ...
     'closerequestfcn',@close_gui,'tag','pll_setup_gui');
 controls=struct();
+labels=struct();
 panels=cell(1,size(groups,1));
 section_control=uicontrol(fig,'style','listbox','units','normalized', ...
     'position',[.02 .29 .22 .64],'string',groups(:,1),'value',last.section, ...
@@ -63,14 +76,27 @@ for g=1:size(groups,1)
     panels{g}=uipanel(fig,'title',groups{g,1},'units','normalized', ...
         'position',[.26 .29 .72 .64],'visible','off');
     names=groups{g,2};
+    row=0;
     for k=1:numel(names)
         name=names{k};
         y=.90-(k-1)*.085;
-        uicontrol(panels{g},'style','text','units','normalized', ...
-            'position',[.02 y .43 .055],'horizontalalignment','left','string',field_label(name));
+        if g==7
+            % Alternative sweep inputs share rows; only the selected mode is visible.
+            if any(strcmp(name,{'sweep_start','sweep_points_per_octave'}))
+                row=row-1;
+            end
+            y=.90-row*.078;
+            row=row+1;
+        end
         key=field_key(g,name);
-        if strcmp(name,'sweep_parameter')
-            choices={'BW_desired_Hz','PM_desired_deg','Fref_Hz','Kphi_A_cycle','fout_desired_Hz'};
+        labels.(key)=uicontrol(panels{g},'style','text','units','normalized', ...
+            'position',[.02 y .43 .055],'horizontalalignment','left','string',field_label(name));
+        if any(strcmp(name,{'sweep_parameter','sweep_type'}))
+            if strcmp(name,'sweep_type')
+                choices={'List','Start / stop / step','Log (points per octave)'};
+            else
+                choices={'BW_desired_Hz','PM_desired_deg','Fref_Hz','Kphi_A_cycle','fout_desired_Hz'};
+            end
             selected=find(strcmp(choices,last.raw.(key)),1);
             if isempty(selected)
                 selected=1;
@@ -121,6 +147,17 @@ uicontrol(fig,'style','pushbutton','units','normalized','position',[.26 .035 .35
 uicontrol(fig,'style','pushbutton','units','normalized','position',[.65 .035 .33 .055], ...
     'string','Exit (retain inputs)','callback',@close_gui);
 refresh();
+if wait_for_close
+    waitfor(fig);
+    if ~isempty(pending_script)
+        try
+            evalin('base',['run(''' strrep(pending_script,'''','''''') ''');']);
+        catch err
+            warning('Generated PLL run failed: %s',err.message);
+            errordlg(err.message,'PLL run failed (script was saved)');
+        end
+    end
+end
 
     function edited(src,event)
         capture();
@@ -182,7 +219,19 @@ refresh();
         enable({'p_CC1','p_CC2','p_RR2'},full);
         enable({'p_CC3','p_RR3'},full || third);
         sweep=get(controls.o_bRunSweep,'value');
-        enable({'o_sweep_parameter','o_sweep_values'},sweep);
+        enable({'o_sweep_parameter','o_sweep_type','o_sweep_values','o_sweep_start', ...
+            'o_sweep_stop','o_sweep_step','o_sweep_points_per_octave','o_bSuppressSweepPlots'},sweep);
+        sweep_type=get(controls.o_sweep_type,'value');
+        keys={'o_sweep_values','o_sweep_start','o_sweep_stop','o_sweep_step','o_sweep_points_per_octave'};
+        visible=[sweep_type==1 sweep_type~=1 sweep_type~=1 sweep_type==2 sweep_type==3];
+        for j=1:numel(keys)
+            state='off';
+            if visible(j)
+                state='on';
+            end
+            set(controls.(keys{j}),'visible',state);
+            set(labels.(keys{j}),'visible',state);
+        end
         if last.section==2
             set(hint,'string',{'File mode replaces reference NOISE only; F_tcxo_Hz is still used.'; ...
                 'The core extends noise endpoints outside the measured offset range.'});
@@ -193,7 +242,12 @@ refresh();
             set(hint,'string',{'Synthesize at each point, then apply the same selected component overrides.'; ...
                 'Choose full override OR third-pole-only override.'});
         elseif last.section==7
-            set(hint,'string',{'For sweeps, turn off core plots/figure export unless you want plots for every point.'; ...
+            guidance='List accepts literals/ranges; start/stop/step uses start:step:stop.';
+            if sweep_type==3
+                guidance='Log: positive start/stop, integer points/octave; exact stop included.';
+            end
+            set(hint,'string',{guidance; ...
+                'bSuppressSweepPlots skips core figures/exports for sweeps; browse with the viewer.'; ...
                 'Results are checkpointed after each point; failed points retain their error.'});
         else
             set(hint,'string',{'Numeric entries accept literals, lists and start:step:stop; no code evaluation.'; ...
@@ -260,7 +314,12 @@ refresh();
                 for j=1:numel(names)
                     key=[prefix '_' names{j}];
                     text=last.raw.(key);
-                    if ischar(config.(field).(names{j}))
+                    if strcmp(prefix,'o') && strcmp(names{j},'sweep_values') && ...
+                            (~strcmp(last.raw.o_sweep_type,'List') || strcmp(last.raw.o_bRunSweep,'1'))
+                        value=rfdude_pll_sweep_values(last.raw.o_sweep_type,text, ...
+                            last.raw.o_sweep_start,last.raw.o_sweep_stop, ...
+                            last.raw.o_sweep_step,last.raw.o_sweep_points_per_octave);
+                    elseif ischar(config.(field).(names{j}))
                         value=text;
                     else
                         try
@@ -297,6 +356,10 @@ refresh();
         end
         if last.run_script
             delete(fig);
+            if wait_for_close
+                pending_script=filename;
+                return;
+            end
             try
                 execute_generated_script(filename);
             catch err
@@ -360,6 +423,10 @@ switch name
     case 'RR3', label='R3 override (ohm)';
     case 'mult', label='Output multiplier/divider ratio';
     case 'def_filename', label='Results basename (.mat)';
+    case 'sweep_start', label='sweep start (parameter units)';
+    case 'sweep_stop', label='sweep stop (parameter units)';
+    case 'sweep_step', label='sweep step (parameter units)';
+    case 'sweep_points_per_octave', label='points per octave';
     otherwise, label=strrep(name,'_',' ');
 end
 end

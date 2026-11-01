@@ -180,6 +180,7 @@ switch name
     case 'integration_upper_Hz', text='Upper integration OFFSET (Hz); same limits at every point so RMS phase/EVM/residual FM are comparable.';
     case 'noise_offsets_Hz', text='Offsets (Hz) to compare in summary plots; noise is interpolated in dBc/Hz versus log10(offset).';
     case 'bShowCorePlots', text='1 = original analysis windows per point; 0 = hidden/closed core windows. Does not disable figure exports.';
+    case 'bSuppressSweepPlots', text='1 = sweeps create NO core figures or figure exports (faster; avoids Octave GUI hangs); single passes unaffected. Use the viewer.';
     case 'bEnableDataViewer', text='1 = launch cc_pll_data_viewer after the run; 0 = save results only, for later independent viewing.';
     case 'bOverwriteResults', text='1 = replace an existing dataset and matching case files (default); set to 0 to protect them. Older surplus case files remain.';
     otherwise, error('No generated-script explanation for run option: %s',name);

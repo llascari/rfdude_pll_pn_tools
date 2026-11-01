@@ -41,6 +41,10 @@ if(startuptest==1)
 	if isfield(pll_inputs_s,'figure_number_base') %%NOTE (copilot generated under LL direction): isolate generated-run figures
 		fignum=pll_inputs_s.figure_number_base;
 	end
+	bCorePlots=1; %%NOTE (copilot generated under LL direction): 0 = skip all figures/figure exports (sweeps); calculations unchanged
+	if isfield(pll_inputs_s,'bCorePlots')
+		bCorePlots=pll_inputs_s.bCorePlots;
+	end
 	fout_desired_Hz=pll_inputs_s.fout_desired_Hz;  % desired final output frequency (multiplier divider output
 	mult=pll_inputs_s.mult; %set to 1 for normal
 	Fref_Hz=pll_inputs_s.Fref_Hz; %reference/phase detector frequency (PFD freq)           
@@ -76,6 +80,7 @@ if(startuptest==1)
 	pn_struct_vco.n=[pn_struct_vco.n pn_struct_vco.n(end) ];
 end        
 vco_n_interp=interp1(log10(pn_struct_vco.f),pn_struct_vco.n,log10(fmain_Hz));
+if bCorePlots
 fignum=fignum+1;
 figure(fignum);
 %semilogx(fmain_Hz,tcxo_n_interp);
@@ -87,6 +92,7 @@ if isfield(pll_inputs_s,'pn_ylimits')
 	pn_ylimits=pll_inputs_s.pn_ylimits;
 end
 ylim(pn_ylimits);
+end
 
 Nvco=10.^(vco_n_interp./20);  %convert to voltage    
 
@@ -138,11 +144,13 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 	    R=F_tcxo_Hz/Fref_Hz                                
 
 	    tcxo_n_interp=interp1(log10(pn_struct_tcxo.f),pn_struct_tcxo.n,log10(fmain_Hz));
+	    if bCorePlots
 	    fignum=fignum+1;
 	    figure(fignum);
 	    %semilogx(fmain_Hz,tcxo_n_interp);
 	    semilogx(fmain_Hz,tcxo_n_interp,pn_struct_tcxo.f,pn_struct_tcxo.n);
 	    title('TCXO interp verification');
+	    end
 
 	    Ntcxo=(N/R)*10.^(tcxo_n_interp./20);  %convert to voltage
 	    % clear pn_struct_tcxo;
@@ -287,11 +295,13 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    Gol_vcof(ii)=1/(1+Gol(ii));    %use this later for the noise shaping
 		    end
 
+		    if bCorePlots
 		    fignum=fignum+1; figure(fignum); 
 		    subplot(4,1,1); semilogx(fmain_Hz,20*log10(abs(Gol)));
 		    subplot(4,1,2); semilogx(fmain_Hz,(180/pi)*angle(Gol)); 
 		    subplot(4,1,3); semilogx(fmain_Hz,20*log10(abs(Gcl)));
 		    subplot(4,1,4); semilogx(fmain_Hz,(180/pi)*angle(Gcl));      
+		    end
 		    [Golmin BW_idx]= min(abs(20*log10(abs(Gol)))) ;
 		    BW_actual=fmain_Hz(BW_idx)
 		    PM_actual=(180/pi)*angle(1*-1*Gol(BW_idx))
@@ -365,6 +375,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 				    fprintf('Estimated small-signal settling time: %.6g s (within +/- %.6g Hz)\n',transient_lock_time_s,transient_ftol_Hz);
 			    end
 
+			    if bCorePlots
 			    fignum=fignum+1;
 			    figure(fignum);
 			    plot(transient_t_s*1e3,transient_freq_Hz,transient_t_s*1e3,fout_desired_Hz*ones(size(transient_t_s)),transient_t_s*1e3,(fout_desired_Hz+transient_ftol_Hz)*ones(size(transient_t_s)),transient_t_s*1e3,(fout_desired_Hz-transient_ftol_Hz)*ones(size(transient_t_s)));
@@ -381,6 +392,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 				    if bSaveFigsJPG
 					    print(figure(fignum),strcat(FigSave_file_basename,'_transient.jpg'),'-djpeg');
 				    end
+			    end
 			    end
 		    end
 
@@ -523,6 +535,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    end
 			    fprintf('Nonlinear transient cycle slips: %d\n',nl_slips);
 
+			    if bCorePlots
 			    fignum=fignum+1;
 			    figure(fignum);
 			    subplot(2,1,1);
@@ -551,6 +564,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 					    print(figure(fignum),strcat(FigSave_file_basename,'_transient_nl.jpg'),'-djpeg');
 				    end
 			    end
+			    end
 		    end
 
 		    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Noise analysis %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -559,6 +573,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 
 		    Ntcxo_loop=mult*Ntcxo.*Gcl;
 
+		    if bCorePlots
 		    fignum=fignum+1;
 		    figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Ntcxo)),fmain_Hz,20*log10(abs(Ntcxo_loop))) ;
 		    grid on; grid minor;
@@ -568,6 +583,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 		    set(leg1,'Interpreter','none');
 		    title('TCXO noise');
 		    ylim(pn_ylimits);
+		    end
 
 
 
@@ -576,6 +592,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 		    %%Leave this here
 		    %
 		    Nvco_loop=mult*Nvco.*Gol_vcof;
+		    if bCorePlots
 		    fignum=fignum+1;
 		    figure(fignum); semilogx(fmain_Hz,20*log10(mult*abs(Nvco)),fmain_Hz,20*log10(abs(Nvco_loop))) ;
 		    grid on; grid minor;
@@ -595,6 +612,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 				    print(figure(fignum),strcat(FigSave_file_basename,'_VCO.jpg'),'-djpeg');
 			    end
 		    end	     
+		    end
 
 		    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RNoise analysis %%%%%%%%%%%%%%%%%%%%%%%%% See the PDF of the mathcad analysis for further explanation (www.RFdude.com)
 		    k=1.38e-23;  %Boltzmann's constant, joules/K 
@@ -645,7 +663,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    ylim(pn_ylimits);
 
 		    end
-		    if 1 %unhide...
+		    if bCorePlots %unhide... (was: if 1)
 			    fignum=fignum+1;
 			    %Volts_to_uVolts=1e-6;
 			    figure(fignum); semilogx(fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
@@ -668,7 +686,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 			    end	          
 			    %VCO output frequency
 		    end
-		    if 1 %unhide...
+		    if bCorePlots %unhide... (was: if 1)
 			    fignum=fignum+1;
 			    %Volts_to_uVolts=1e-6;
 			    figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_no_R),fmain_Hz,20*log10(Ntot_w_R)) ;
@@ -692,7 +710,7 @@ pn_struct_tcxo.n=[pn_struct_tcxo.n pn_struct_tcxo.n(end) ];
 		    end     
 
 		    %%NOTE: one with main contributors and total
-		    if 1 %unhide...
+		    if bCorePlots %unhide... (was: if 1)
 			    fignum=fignum+1;
 			    figure(fignum); semilogx(fmain_Hz,20*log10(Ntot_w_R),fmain_Hz,20*log10(Nvco_loop),fmain_Hz,20*log10(Ntcxo_loop),fmain_Hz,20*log10(N_out_R2),fmain_Hz,20*log10(N_out_R3),fmain_Hz,20*log10(N_pd)) ;
 			    grid on; grid minor;

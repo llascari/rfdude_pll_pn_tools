@@ -57,7 +57,13 @@ loading a MAT containing pn_profile_s does not implicitly enable selection.
 
 The final controls are "Run the script" and "Enable data viewer after run".
 Run is initially unchecked. Generate the script, then either keep editing,
-exit, or have it run immediately. Generated scripts keep explicit inputs,
+exit, or have it run immediately. Typed as a command, bb_pll_setup_gui keeps
+the command prompt busy until its window closes, so a requested run starts
+after the window closes, in the base workspace, just as if the script were
+typed at the prompt. Running long analyses inside a GUI button callback could
+freeze Octave's Qt windows. Calling fig=bb_pll_setup_gui(...) with an output
+keeps the earlier non-blocking behavior (used by tests); a requested run then
+still starts inside the button callback. Generated scripts keep explicit inputs,
 existing comments and ordering, plus visible run_options_s settings.
 Generated scripts are heavily commented like copied-and-edited examples:
 every editable setting has a nearby explanation of its units/role, with
@@ -81,6 +87,19 @@ testing or another local setup history; the directory must already exist.
 Single pass is the default. For a sweep, enable bRunSweep in Run / sweep,
 select a design target and enter its values. Supported targets: bandwidth,
 phase margin, PFD frequency, charge-pump current and output frequency.
+The sweep type dropdown offers:
+    List: explicit values or the existing numeric range syntax.
+    Start / stop / step: separate fields, using start:step:stop; the step
+        must point toward stop. Stop is included only when the step reaches it.
+    Log (points per octave): positive start/stop and a positive integer
+        number of intervals per factor-of-two change. For example, 1000 to
+        4000 at 2 points/octave gives [1000 1414.21356 2000 2828.42712 4000].
+        The exact stop is always included; the last interval may be shorter.
+Ascending, descending and single-point sweeps are supported. Entries for
+inactive sweep types are retained, including unfinished text. Old saved
+setups restore in List mode. Generated scripts store the resolved numeric
+sweep_values vector, so the existing runner and saved-data format are unchanged.
+All sweep types are limited to 100000 distinct finite values.
 At every point, synthesize first, then apply the SAME selected component
 overrides. A bandwidth sweep with fixed third-pole R3/C3 is supported; a full
 component override with a bandwidth/phase-margin target sweep is rejected
@@ -88,7 +107,15 @@ because those targets cannot change the fixed filter. Component-tolerance
 sweeps are not part of this version.
 
 Turn off bShowCorePlots and bSaveFigs for large sweeps unless you want the
-original analysis figures for each point. The viewer checkbox independently
+original analysis figures for each point. bSuppressSweepPlots (default 1 in
+the GUI/configuration) makes sweep points create no core figures or figure
+exports at all; the calculations, saved data and viewer are unchanged, and
+single passes are unaffected. Repeated hidden-figure rendering/printing could
+hang Octave (Qt) part way through long sweeps; suppression avoids it and is
+faster. Older generated scripts without this option keep their sweep figures;
+add run_options_s.bSuppressSweepPlots=1; or regenerate. Each sweep point prints
+"PLL point k/N: ..." when it starts (flushed immediately) and
+"PLL point k/N complete in X s" when it ends, so a long run shows it is alive. The viewer checkbox independently
 controls post-run browsing. PDF/JPG exports explicitly select file drivers
 (-dpdf/-djpeg) and figure handles; they do not use the system printer.
 Outputs are relative to the generated script,
@@ -136,6 +163,8 @@ guaranteed hardware lock time; disabled and not-settled statuses are distinct,
 with missing summary markers rather than fabricated zero-time results.
 
 Focused offline regression, from the repository root (Qt/display required):
+    octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath('pll_synth'); test_pll_setup_sweeps();"
+    matlab -batch "addpath('pll_synth'); test_pll_setup_sweeps();"
     octave --no-init-file --no-site-file --no-gui --quiet --eval "addpath('pll_synth'); test_pll_run_tools();"
     matlab -batch "addpath('pll_synth'); test_pll_run_tools();"
 Tests use temporary outputs/state, not local measurement data or hardware.

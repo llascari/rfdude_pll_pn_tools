@@ -77,6 +77,9 @@ end
 for name={'bRunSweep','bShowCorePlots','bEnableDataViewer','bOverwriteResults'}
     validateattributes(o.(name{1}),{'numeric','logical'},{'scalar','binary'},'',name{1});
 end
+if isfield(o,'bSuppressSweepPlots')
+    validateattributes(o.bSuppressSweepPlots,{'numeric','logical'},{'scalar','binary'},'','bSuppressSweepPlots');
+end
 validateattributes(o.integration_lower_Hz,{'numeric'}, ...
     {'scalar','real','finite','>=',p.fstart_main_Hz},'','integration_lower_Hz');
 validateattributes(o.integration_upper_Hz,{'numeric'}, ...
